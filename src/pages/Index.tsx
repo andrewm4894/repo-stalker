@@ -42,7 +42,12 @@ const Index = () => {
       );
       if (!prResponse.ok) throw new Error("Failed to fetch PRs");
       const prData = await prResponse.json();
-      setPRs(prData);
+      
+      // Filter out dependabot PRs
+      const filteredPRs = prData.filter(
+        (pr: PR) => !pr.user.login.toLowerCase().includes("dependabot")
+      );
+      setPRs(filteredPRs);
 
       // Fetch Issues
       const issueResponse = await fetch(
@@ -50,11 +55,14 @@ const Index = () => {
       );
       if (!issueResponse.ok) throw new Error("Failed to fetch issues");
       const issueData = await issueResponse.json();
-      // Filter out pull requests from issues
-      const actualIssues = issueData.filter((item: any) => !item.pull_request);
+      
+      // Filter out pull requests from issues and dependabot issues
+      const actualIssues = issueData.filter(
+        (item: any) => !item.pull_request && !item.user.login.toLowerCase().includes("dependabot")
+      );
       setIssues(actualIssues);
 
-      toast.success(`Loaded ${prData.length} PRs and ${actualIssues.length} issues`);
+      toast.success(`Loaded ${filteredPRs.length} PRs and ${actualIssues.length} issues`);
     } catch (error) {
       console.error("Search error:", error);
       toast.error("Failed to fetch repository data. Please check the repo name.");
