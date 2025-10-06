@@ -1,0 +1,140 @@
+import { useState, useRef, useEffect } from "react";
+import { Send, Bot, User as UserIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface ChatInterfaceProps {
+  context: string;
+  title: string;
+}
+
+export const ChatInterface = ({ context, title }: ChatInterfaceProps) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("chat-with-pr", {
+        body: {
+          message: userMessage,
+          context,
+          title,
+          history: messages,
+        },
+      });
+
+      if (error) throw error;
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.response },
+      ]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast.error("Failed to get response. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="glass rounded-2xl p-4 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-4">
+        <Bot className="w-5 h-5 text-accent" />
+        <h3 className="font-semibold">Chat</h3>
+      </div>
+
+      <ScrollArea className="flex-1 -mr-4 pr-4 mb-4" ref={scrollRef}>
+        <div className="space-y-4">
+          {messages.length === 0 && (
+            <div className="text-center text-muted-foreground py-8">
+              <p>Ask me anything about this {title.includes("Pull Request") ? "PR" : "issue"}!</p>
+            </div>
+          )}
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              {msg.role === "assistant" && (
+                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 text-accent" />
+                </div>
+              )}
+              <div
+                className={`rounded-lg p-3 max-w-[80%] ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary"
+                }`}
+              >
+                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              </div>
+              {msg.role === "user" && (
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <UserIcon className="w-4 h-4 text-primary" />
+                </div>
+              )}
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-accent animate-pulse" />
+              </div>
+              <div className="rounded-lg p-3 bg-secondary">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      <div className="flex gap-2">
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+          placeholder="Ask about this PR or issue..."
+          disabled={isLoading}
+          className="bg-secondary border-border"
+        />
+        <Button
+          onClick={handleSend}
+          disabled={isLoading || !input.trim()}
+          size="icon"
+          className="gradient-primary hover:opacity-90 transition-opacity"
+        >
+          <Send className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
