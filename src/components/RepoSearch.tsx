@@ -32,7 +32,7 @@ export const RepoSearch = ({ onSearch, isLoading }: RepoSearchProps) => {
         </div>
         
         <div className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -47,13 +47,13 @@ export const RepoSearch = ({ onSearch, isLoading }: RepoSearchProps) => {
             <Button 
               type="submit" 
               disabled={isLoading || !repo.trim()}
-              className="gradient-primary hover:opacity-90 transition-opacity"
+              className="gradient-primary hover:opacity-90 transition-opacity w-full md:w-auto"
             >
               {isLoading ? "Loading..." : "Search"}
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <Select value={filter} onValueChange={(v) => setFilter(v as TimeFilter)}>
