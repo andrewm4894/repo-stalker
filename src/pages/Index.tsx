@@ -127,9 +127,26 @@ const Index = () => {
 
         {/* Main Content */}
         {currentItems.length > 0 && (
-          <div className="grid md:grid-cols-2 gap-4 h-[600px]">
-            {/* Left Panel - PR/Issue List */}
-            <div className="h-full">
+          <div className="space-y-4">
+            {/* Chat Panel - Top */}
+            <div className="h-[400px]">
+              {currentSelected ? (
+                <ChatInterface
+                  context={currentSelected.body || "No description provided"}
+                  title={`${activeTab === "prs" ? "Pull Request" : "Issue"} #${currentSelected.number}: ${currentSelected.title}`}
+                  key={`${activeTab}-${currentSelected.number}`}
+                />
+              ) : (
+                <div className="glass rounded-2xl p-8 h-full flex items-center justify-center">
+                  <p className="text-muted-foreground text-center">
+                    Select a {activeTab === "prs" ? "pull request" : "issue"} to start chatting
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* PR/Issue List - Bottom */}
+            <div className="h-[500px]">
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "prs" | "issues")} className="h-full flex flex-col">
                 <TabsList className="glass mb-4">
                   <TabsTrigger value="prs">Pull Requests</TabsTrigger>
@@ -152,23 +169,6 @@ const Index = () => {
                   />
                 </TabsContent>
               </Tabs>
-            </div>
-
-            {/* Right Panel - Chat */}
-            <div className="h-full">
-              {currentSelected ? (
-                <ChatInterface
-                  context={currentSelected.body || "No description provided"}
-                  title={`${activeTab === "prs" ? "Pull Request" : "Issue"} #${currentSelected.number}: ${currentSelected.title}`}
-                  key={`${activeTab}-${currentSelected.number}`}
-                />
-              ) : (
-                <div className="glass rounded-2xl p-8 h-full flex items-center justify-center">
-                  <p className="text-muted-foreground text-center">
-                    Select a {activeTab === "prs" ? "pull request" : "issue"} to start chatting
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         )}
