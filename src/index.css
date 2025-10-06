@@ -8,74 +8,74 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 6%;
+    --foreground: 120 100% 85%;
 
-    --card: 224 44% 16%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 120 100% 85%;
 
-    --popover: 224 44% 16%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 120 100% 85%;
 
-    --primary: 263 70% 58%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
     
-    --primary-glow: 263 70% 68%;
+    --primary-glow: 120 100% 60%;
 
-    --secondary: 220 30% 20%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 120 100% 85%;
 
-    --muted: 220 30% 20%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 120 50% 50%;
 
-    --accent: 189 90% 55%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 180 100% 50%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 30% 22%;
-    --input: 220 30% 22%;
-    --ring: 263 70% 58%;
+    --border: 120 50% 25%;
+    --input: 0 0% 12%;
+    --ring: 120 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.25rem;
     
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 58%), hsl(189 90% 55%));
-    --gradient-secondary: linear-gradient(180deg, hsl(224 44% 16% / 0.95), hsl(224 44% 16%));
-    --shadow-glow: 0 0 40px hsl(263 70% 58% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
+    --gradient-primary: linear-gradient(135deg, hsl(120 100% 50%), hsl(180 100% 50%));
+    --gradient-secondary: linear-gradient(180deg, hsl(0 0% 8% / 0.95), hsl(0 0% 8%));
+    --shadow-glow: 0 0 20px hsl(120 100% 50% / 0.5), 0 0 40px hsl(120 100% 50% / 0.3);
+    --shadow-card: 0 4px 12px hsl(0 0% 0% / 0.8);
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 6%;
+    --foreground: 120 100% 85%;
 
-    --card: 224 44% 16%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 120 100% 85%;
 
-    --popover: 224 44% 16%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 120 100% 85%;
 
-    --primary: 263 70% 58%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
     
-    --primary-glow: 263 70% 68%;
+    --primary-glow: 120 100% 60%;
 
-    --secondary: 220 30% 20%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 120 100% 85%;
 
-    --muted: 220 30% 20%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 120 50% 50%;
 
-    --accent: 189 90% 55%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 180 100% 50%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 30% 22%;
-    --input: 220 30% 22%;
-    --ring: 263 70% 58%;
+    --border: 120 50% 25%;
+    --input: 0 0% 12%;
+    --ring: 120 100% 50%;
   }
 }
 
@@ -86,17 +86,22 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    font-family: 'Courier New', 'Consolas', 'Monaco', 'Lucida Console', monospace;
   }
   
   code, pre {
-    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-family: 'Courier New', 'Consolas', 'Monaco', 'Lucida Console', monospace;
+  }
+  
+  * {
+    font-family: 'Courier New', 'Consolas', 'Monaco', 'Lucida Console', monospace;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-card/40 backdrop-blur-xl border border-border/50;
+    @apply bg-card border-2 border-primary/30;
+    box-shadow: 0 0 10px hsl(120 100% 50% / 0.2);
   }
   
   .gradient-primary {
@@ -110,5 +115,20 @@ All colors MUST be HSL.
   
   .glow {
     box-shadow: var(--shadow-glow);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(120 100% 50% / 0.5), 0 0 40px hsl(120 100% 50% / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px hsl(120 100% 50% / 0.7), 0 0 60px hsl(120 100% 50% / 0.4);
+    }
+  }
+  
+  .terminal-text {
+    color: hsl(120 100% 85%);
+    text-shadow: 0 0 5px hsl(120 100% 50% / 0.5);
   }
 }
