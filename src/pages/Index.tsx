@@ -50,7 +50,7 @@ const Index = () => {
     try {
       // Fetch PRs (get more to ensure we have enough after filtering)
       const prResponse = await fetch(
-        `https://api.github.com/repos/${repo}/pulls?state=all&sort=updated&per_page=100`
+        `https://api.github.com/repos/${repo}/pulls?state=all&sort=created&direction=desc&per_page=100`
       );
       if (!prResponse.ok) throw new Error("Failed to fetch PRs");
       const prData = await prResponse.json();
@@ -69,7 +69,7 @@ const Index = () => {
 
       // Fetch Issues
       const issueResponse = await fetch(
-        `https://api.github.com/repos/${repo}/issues?state=all&sort=updated&per_page=100`
+        `https://api.github.com/repos/${repo}/issues?state=all&sort=created&direction=desc&per_page=100`
       );
       if (!issueResponse.ok) throw new Error("Failed to fetch issues");
       const issueData = await issueResponse.json();
