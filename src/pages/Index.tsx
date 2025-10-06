@@ -36,7 +36,8 @@ const Index = () => {
     const days = daysMap[filter];
     const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     
-    return items.filter(item => new Date(item.updated_at) >= cutoffDate);
+    // Filter by created_at instead of updated_at to show recently created items
+    return items.filter(item => new Date(item.created_at) >= cutoffDate);
   };
 
   const handleSearch = async (repo: string, filter: TimeFilter) => {
