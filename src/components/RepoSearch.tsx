@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Github, Calendar } from "lucide-react";
+import { Search, Github, Calendar, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,18 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export type TimeFilter = "7d" | "30d" | "90d" | "all";
 
 interface RepoSearchProps {
-  onSearch: (repo: string, filter: TimeFilter) => void;
+  onSearch: (repo: string, filter: TimeFilter, searchTerm: string) => void;
   isLoading: boolean;
 }
 
 export const RepoSearch = ({ onSearch, isLoading }: RepoSearchProps) => {
   const [repo, setRepo] = useState("");
   const [filter, setFilter] = useState<TimeFilter>("30d");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (repo.trim()) {
-      onSearch(repo.trim(), filter);
+      onSearch(repo.trim(), filter, searchTerm.trim());
     }
   };
 
@@ -52,19 +53,33 @@ export const RepoSearch = ({ onSearch, isLoading }: RepoSearchProps) => {
             </Button>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <Select value={filter} onValueChange={(v) => setFilter(v as TimeFilter)}>
-              <SelectTrigger className="w-[200px] bg-secondary border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-                <SelectItem value="all">All time</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <Select value={filter} onValueChange={(v) => setFilter(v as TimeFilter)}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7d">Last 7 days</SelectItem>
+                  <SelectItem value="30d">Last 30 days</SelectItem>
+                  <SelectItem value="90d">Last 90 days</SelectItem>
+                  <SelectItem value="all">All time</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <Input
+                type="text"
+                placeholder="Filter by keywords..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-secondary border-border terminal-text"
+                disabled={isLoading}
+              />
+            </div>
           </div>
         </div>
       </div>

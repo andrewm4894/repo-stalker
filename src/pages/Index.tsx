@@ -40,7 +40,17 @@ const Index = () => {
     return items.filter(item => new Date(item.created_at) >= cutoffDate);
   };
 
-  const handleSearch = async (repo: string, filter: TimeFilter) => {
+  const filterBySearchTerm = (items: PR[], searchTerm: string): PR[] => {
+    if (!searchTerm) return items;
+    
+    const lowerSearch = searchTerm.toLowerCase();
+    return items.filter(item => 
+      item.title.toLowerCase().includes(lowerSearch) ||
+      (item.body && item.body.toLowerCase().includes(lowerSearch))
+    );
+  };
+
+  const handleSearch = async (repo: string, filter: TimeFilter, searchTerm: string) => {
     setIsLoading(true);
     setPRs([]);
     setIssues([]);
@@ -65,6 +75,9 @@ const Index = () => {
       
       filteredPRs = filterByDate(filteredPRs, filter);
       console.log(`After date filter (${filter}): ${filteredPRs.length} PRs`);
+      
+      filteredPRs = filterBySearchTerm(filteredPRs, searchTerm);
+      console.log(`After keyword filter: ${filteredPRs.length} PRs`);
       setPRs(filteredPRs);
 
       // Fetch Issues
@@ -84,6 +97,9 @@ const Index = () => {
       
       actualIssues = filterByDate(actualIssues, filter);
       console.log(`After date filter (${filter}): ${actualIssues.length} issues`);
+      
+      actualIssues = filterBySearchTerm(actualIssues, searchTerm);
+      console.log(`After keyword filter: ${actualIssues.length} issues`);
       setIssues(actualIssues);
 
       const filterLabel = filter === "all" ? "all time" : `last ${filter.replace("d", " days")}`;
