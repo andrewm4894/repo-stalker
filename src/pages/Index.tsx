@@ -54,11 +54,16 @@ const Index = () => {
       if (!prResponse.ok) throw new Error("Failed to fetch PRs");
       const prData = await prResponse.json();
       
+      console.log(`Fetched ${prData.length} total PRs from GitHub`);
+      
       // Filter out dependabot PRs and apply date filter
       let filteredPRs = prData.filter(
         (pr: PR) => !pr.user.login.toLowerCase().includes("dependabot")
       );
+      console.log(`After removing dependabot: ${filteredPRs.length} PRs`);
+      
       filteredPRs = filterByDate(filteredPRs, filter);
+      console.log(`After date filter (${filter}): ${filteredPRs.length} PRs`);
       setPRs(filteredPRs);
 
       // Fetch Issues
@@ -68,11 +73,16 @@ const Index = () => {
       if (!issueResponse.ok) throw new Error("Failed to fetch issues");
       const issueData = await issueResponse.json();
       
+      console.log(`Fetched ${issueData.length} total issues from GitHub`);
+      
       // Filter out pull requests from issues, dependabot issues, and apply date filter
       let actualIssues = issueData.filter(
         (item: any) => !item.pull_request && !item.user.login.toLowerCase().includes("dependabot")
       );
+      console.log(`After filtering: ${actualIssues.length} issues`);
+      
       actualIssues = filterByDate(actualIssues, filter);
+      console.log(`After date filter (${filter}): ${actualIssues.length} issues`);
       setIssues(actualIssues);
 
       const filterLabel = filter === "all" ? "all time" : `last ${filter.replace("d", " days")}`;
