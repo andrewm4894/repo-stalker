@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RepoSearch } from "@/components/RepoSearch";
+import { RepoSearch, TimeFilter } from "@/components/RepoSearch";
 import { PRList } from "@/components/PRList";
 import { ChatInterface } from "@/components/ChatInterface";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +28,18 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"prs" | "issues">("prs");
 
-  const handleSearch = async (repo: string) => {
+  const filterByDate = (items: PR[], filter: TimeFilter): PR[] => {
+    if (filter === "all") return items;
+    
+    const now = new Date();
+    const daysMap = { "7d": 7, "30d": 30, "90d": 90 };
+    const days = daysMap[filter];
+    const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    
+    return items.filter(item => new Date(item.updated_at) >= cutoffDate);
+  };
+
+  const handleSearch = async (repo: string, filter: TimeFilter) => {
     setIsLoading(true);
     setPRs([]);
     setIssues([]);
@@ -36,33 +47,36 @@ const Index = () => {
     setSelectedIssue(null);
 
     try {
-      // Fetch PRs
+      // Fetch PRs (get more to ensure we have enough after filtering)
       const prResponse = await fetch(
-        `https://api.github.com/repos/${repo}/pulls?state=all&sort=updated&per_page=20`
+        `https://api.github.com/repos/${repo}/pulls?state=all&sort=updated&per_page=100`
       );
       if (!prResponse.ok) throw new Error("Failed to fetch PRs");
       const prData = await prResponse.json();
       
-      // Filter out dependabot PRs
-      const filteredPRs = prData.filter(
+      // Filter out dependabot PRs and apply date filter
+      let filteredPRs = prData.filter(
         (pr: PR) => !pr.user.login.toLowerCase().includes("dependabot")
       );
+      filteredPRs = filterByDate(filteredPRs, filter);
       setPRs(filteredPRs);
 
       // Fetch Issues
       const issueResponse = await fetch(
-        `https://api.github.com/repos/${repo}/issues?state=all&sort=updated&per_page=20`
+        `https://api.github.com/repos/${repo}/issues?state=all&sort=updated&per_page=100`
       );
       if (!issueResponse.ok) throw new Error("Failed to fetch issues");
       const issueData = await issueResponse.json();
       
-      // Filter out pull requests from issues and dependabot issues
-      const actualIssues = issueData.filter(
+      // Filter out pull requests from issues, dependabot issues, and apply date filter
+      let actualIssues = issueData.filter(
         (item: any) => !item.pull_request && !item.user.login.toLowerCase().includes("dependabot")
       );
+      actualIssues = filterByDate(actualIssues, filter);
       setIssues(actualIssues);
 
-      toast.success(`Loaded ${filteredPRs.length} PRs and ${actualIssues.length} issues`);
+      const filterLabel = filter === "all" ? "all time" : `last ${filter.replace("d", " days")}`;
+      toast.success(`Loaded ${filteredPRs.length} PRs and ${actualIssues.length} issues from ${filterLabel}`);
     } catch (error) {
       console.error("Search error:", error);
       toast.error("Failed to fetch repository data. Please check the repo name.");
