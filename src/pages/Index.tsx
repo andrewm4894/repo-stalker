@@ -4,6 +4,7 @@ import { PRList } from "@/components/PRList";
 import { ChatInterface } from "@/components/ChatInterface";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Logo } from "@/components/Logo";
 
 interface PR {
   number: number;
@@ -119,12 +120,7 @@ const Index = () => {
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2 mb-8">
-          <h1 className="text-5xl font-bold text-gradient">RepoStalker</h1>
-          <p className="text-muted-foreground">
-            Catch up on recent PRs and issues with AI-powered insights
-          </p>
-        </div>
+        <Logo />
 
         {/* Search */}
         <RepoSearch onSearch={handleSearch} isLoading={isLoading} />
