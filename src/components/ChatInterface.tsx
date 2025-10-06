@@ -23,6 +23,14 @@ export const ChatInterface = ({ context, title }: ChatInterfaceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Get PostHog distinct_id
+  const getDistinctId = () => {
+    if (typeof window !== 'undefined' && (window as any).posthog) {
+      return (window as any).posthog.get_distinct_id();
+    }
+    return null;
+  };
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -44,6 +52,7 @@ export const ChatInterface = ({ context, title }: ChatInterfaceProps) => {
           context,
           title,
           history: messages,
+          distinctId: getDistinctId(),
         },
       });
 
