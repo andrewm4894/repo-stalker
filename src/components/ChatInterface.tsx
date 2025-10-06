@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -91,7 +92,19 @@ export const ChatInterface = ({ context, title }: ChatInterfaceProps) => {
                     : "bg-secondary"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                {msg.role === "assistant" ? (
+                  <div className="text-sm prose prose-invert prose-sm max-w-none
+                    prose-p:my-2 prose-p:leading-relaxed
+                    prose-pre:bg-black/50 prose-pre:border prose-pre:border-border
+                    prose-code:text-accent prose-code:bg-black/30 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+                    prose-strong:text-foreground prose-strong:font-semibold
+                    prose-ul:my-2 prose-ol:my-2
+                    prose-li:my-1">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                )}
               </div>
               {msg.role === "user" && (
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
