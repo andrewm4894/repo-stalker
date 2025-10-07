@@ -115,7 +115,23 @@ serve(async (req) => {
 
     const systemPrompt = `You are a helpful assistant that helps developers understand and analyze GitHub ${itemType}.
 
-You have access to ${items.length} ${itemType} and can use tools to:
+You have access to ${items.length} ${itemType}. Here's the complete list with details:
+
+${items.map((item: any) => {
+  const labels = item.labels?.map((l: any) => l.name).join(', ') || 'no labels';
+  return `
+#${item.number}: ${item.title}
+- State: ${item.state}
+- Author: ${item.user?.login || 'unknown'}
+- Created: ${item.created_at}
+- Comments: ${item.comments}
+- Labels: ${labels}
+- URL: ${item.html_url}
+${item.body ? `- Description: ${item.body.substring(0, 300)}${item.body.length > 300 ? '...' : ''}` : ''}
+`;
+}).join('\n')}
+
+You can use tools to:
 - Search items by keyword in title or body
 - Filter by state (open/closed)
 - Filter by label (e.g., "bug", "enhancement", "documentation")
@@ -123,23 +139,13 @@ You have access to ${items.length} ${itemType} and can use tools to:
 - Analyze activity patterns
 
 When responding:
-- Be proactive - use tools to answer questions without always asking for clarification
-- For questions like "show me bug reports", use the filter_by_label tool with "bug"
-- For questions like "what issues are open", use filter_by_state tool
+- Answer questions directly using the context above when possible
+- Use tools only when you need to search, filter, or get additional details
+- For questions like "show me bug reports", filter the context above for items with "bug" label
 - Be concise and relevant
-- ALWAYS include GitHub URLs when discussing specific ${type === 'pr' ? 'PRs' : 'issues'} - the tools provide these URLs
+- ALWAYS include GitHub URLs when discussing specific ${type === 'pr' ? 'PRs' : 'issues'}
 - Reference specific ${type === 'pr' ? 'PR' : 'Issue'} numbers with their links (e.g., "#123: Title - https://github.com/...")
-- Summarize findings clearly
-
-IMPORTANT: You HAVE access to GitHub URLs through the tools - always share them when relevant!
-
-Available ${itemType}:
-${items.slice(0, 50).map((item: any) => {
-  const labels = item.labels?.map((l: any) => l.name).join(', ') || 'no labels';
-  return `#${item.number}: ${item.title} (${item.state}, labels: ${labels}) - ${item.comments} comments`;
-}).join('\n')}
-
-${items.length > 50 ? `... and ${items.length - 50} more` : ''}`;
+- Summarize findings clearly`;
 
     // Build messages array
     const messages = [
