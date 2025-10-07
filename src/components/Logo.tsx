@@ -7,7 +7,7 @@ export const Logo = () => {
         <img 
           src={stalkerLogo} 
           alt="RepoStalker Logo - GitHub Octocat with spy stalker" 
-          className="w-24 h-24 animate-pulse"
+          className="w-20 h-20 md:w-28 md:h-28 animate-pulse"
         />
       </div>
       <div className="flex flex-col">
