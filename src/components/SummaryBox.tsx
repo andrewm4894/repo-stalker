@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronDown, Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
 
 interface PR {
   number: number;
@@ -102,8 +103,10 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
                 <span>Generating summary...</span>
               </div>
             ) : summary ? (
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <p className="text-sm leading-relaxed whitespace-pre-line">{summary}</p>
+              <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
+                <ReactMarkdown>
+                  {summary}
+                </ReactMarkdown>
               </div>
             ) : (
               <div className="text-sm text-muted-foreground text-center py-4">
