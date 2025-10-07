@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, Sparkles, Loader2, MessageSquare } from "lucide-react";
+import { ChevronDown, Loader2, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { RepoChatDialog } from "./RepoChatDialog";
+import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 
 interface PR {
   number: number;
@@ -96,7 +97,7 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
               className="w-full justify-between p-4 h-auto hover:bg-accent/50"
             >
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <img src={stalkerLogo} alt="RepoStalker" className="h-4 w-4" />
                 <span className="font-medium">AI Summary of {items.length} {itemType}</span>
               </div>
               <ChevronDown
