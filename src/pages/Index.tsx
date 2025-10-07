@@ -5,7 +5,8 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
-import { RepoHistory, addRepoToHistory } from "@/components/RepoHistory";
+import { SavedRepos } from "@/components/SavedRepos";
+import { SaveRepoButton } from "@/components/SaveRepoButton";
 import { SummaryBox } from "@/components/SummaryBox";
 import { TrendingRepos } from "@/components/TrendingRepos";
 
@@ -62,9 +63,6 @@ const Index = () => {
     setSelectedPR(null);
     setSelectedIssue(null);
     setCurrentRepo(repo);
-    
-    // Add to history
-    addRepoToHistory(repo);
 
     try {
       // Fetch PRs (get more to ensure we have enough after filtering)
@@ -130,11 +128,20 @@ const Index = () => {
         {/* Header */}
         <Logo />
 
-        {/* Search */}
-        <RepoSearch onSearch={handleSearch} isLoading={isLoading} currentRepo={currentRepo} />
+        {/* Search and Save Button */}
+        <div className="flex gap-2 items-start">
+          <div className="flex-1">
+            <RepoSearch onSearch={handleSearch} isLoading={isLoading} currentRepo={currentRepo} />
+          </div>
+          {currentRepo && (
+            <div className="pt-1">
+              <SaveRepoButton repo={currentRepo} />
+            </div>
+          )}
+        </div>
         
-        {/* History */}
-        <RepoHistory 
+        {/* Saved Repos */}
+        <SavedRepos 
           onSelectRepo={(repo) => {
             handleSearch(repo, "14d", "");
           }}
