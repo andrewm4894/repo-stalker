@@ -62,6 +62,23 @@ serve(async (req) => {
       {
         type: "function",
         function: {
+          name: "filter_by_label",
+          description: `Filter ${itemType} by label (e.g., bug, enhancement, documentation)`,
+          parameters: {
+            type: "object",
+            properties: {
+              label: {
+                type: "string",
+                description: "Label name to filter by (case-insensitive)"
+              }
+            },
+            required: ["label"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
           name: "get_item_details",
           description: `Get full details of a specific ${type === 'pr' ? 'PR' : 'Issue'} by number`,
           parameters: {
@@ -99,25 +116,28 @@ serve(async (req) => {
     const systemPrompt = `You are a helpful assistant that helps developers understand and analyze GitHub ${itemType}.
 
 You have access to ${items.length} ${itemType} and can use tools to:
-- Search items by keyword
+- Search items by keyword in title or body
 - Filter by state (open/closed)
+- Filter by label (e.g., "bug", "enhancement", "documentation")
 - Get detailed information about specific items
 - Analyze activity patterns
 
 When responding:
+- Be proactive - use tools to answer questions without always asking for clarification
+- For questions like "show me bug reports", use the filter_by_label tool with "bug"
+- For questions like "what issues are open", use filter_by_state tool
 - Be concise and relevant
 - ALWAYS include GitHub URLs when discussing specific ${type === 'pr' ? 'PRs' : 'issues'} - the tools provide these URLs
 - Reference specific ${type === 'pr' ? 'PR' : 'Issue'} numbers with their links (e.g., "#123: Title - https://github.com/...")
-- Use tools to provide accurate information
 - Summarize findings clearly
-- When users ask for links, provide the full GitHub URLs from the tool data
 
 IMPORTANT: You HAVE access to GitHub URLs through the tools - always share them when relevant!
 
 Available ${itemType}:
-${items.slice(0, 50).map((item: any) => 
-  `#${item.number}: ${item.title} (${item.state}) - ${item.comments} comments`
-).join('\n')}
+${items.slice(0, 50).map((item: any) => {
+  const labels = item.labels?.map((l: any) => l.name).join(', ') || 'no labels';
+  return `#${item.number}: ${item.title} (${item.state}, labels: ${labels}) - ${item.comments} comments`;
+}).join('\n')}
 
 ${items.length > 50 ? `... and ${items.length - 50} more` : ''}`;
 
@@ -222,7 +242,9 @@ ${items.length > 50 ? `... and ${items.length - 50} more` : ''}`;
               title: item.title,
               state: item.state,
               author: item.user?.login,
-              comments: item.comments
+              comments: item.comments,
+              url: item.html_url,
+              labels: item.labels?.map((l: any) => l.name) || []
             }));
             break;
             
@@ -233,7 +255,23 @@ ${items.length > 50 ? `... and ${items.length - 50} more` : ''}`;
               number: item.number,
               title: item.title,
               state: item.state,
-              comments: item.comments
+              comments: item.comments,
+              url: item.html_url,
+              labels: item.labels?.map((l: any) => l.name) || []
+            }));
+            break;
+            
+          case 'filter_by_label':
+            const labelLower = args.label.toLowerCase();
+            result = items.filter((item: any) => 
+              item.labels?.some((l: any) => l.name.toLowerCase().includes(labelLower))
+            ).map((item: any) => ({
+              number: item.number,
+              title: item.title,
+              state: item.state,
+              comments: item.comments,
+              url: item.html_url,
+              labels: item.labels?.map((l: any) => l.name) || []
             }));
             break;
             
