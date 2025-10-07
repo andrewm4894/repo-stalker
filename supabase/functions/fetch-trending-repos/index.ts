@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -9,57 +10,80 @@ serve(async (req) => {
   try {
     const { language, since } = await req.json();
     
-    // Use a different trending API - this one is more reliable
+    // Build GitHub trending URL
     const period = since === 'daily' ? 'daily' : since === 'monthly' ? 'monthly' : 'weekly';
-    const langParam = language && language !== 'all' ? language : '';
+    const langParam = language && language !== 'all' ? `/${language}` : '';
+    const url = `https://github.com/trending${langParam}?since=${period}`;
     
-    console.log(`Fetching trending repos for period: ${period}, language: ${langParam || 'all'}`);
+    console.log(`Scraping GitHub trending page: ${url}`);
     
-    // Use the GitHub API directly with a better approximation
-    // Sort by stars gained in the time period (using creation date as proxy)
-    const daysAgo = period === 'daily' ? 1 : period === 'monthly' ? 30 : 7;
-    const date = new Date();
-    date.setDate(date.getDate() - daysAgo);
-    const dateStr = date.toISOString().split('T')[0];
-    
-    let query = `pushed:>${dateStr} stars:>50`;
-    if (langParam) {
-      query += ` language:${langParam}`;
-    }
-    
-    console.log('GitHub API query:', query);
-    
-    const response = await fetch(
-      `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=20`,
-      {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Repo-Stalker-App',
-        },
-      }
-    );
+    // Fetch the trending page
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
+      throw new Error(`GitHub returned ${response.status}`);
     }
 
-    const data = await response.json();
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
     
-    // Transform and filter to get most actively starred repos
-    const repos = data.items
-      .slice(0, 10)
-      .map((repo: any) => ({
-        name: repo.full_name,
-        description: repo.description,
-        stars: repo.stargazers_count,
-        language: repo.language,
-        url: repo.html_url,
-      }));
+    if (!doc) {
+      throw new Error('Failed to parse HTML');
+    }
 
-    console.log(`Found ${repos.length} trending repos`);
+    // Parse repo articles
+    const articles = doc.querySelectorAll('article.Box-row');
+    const repos = [];
+    
+    for (const article of articles) {
+      try {
+        // Get repo name from h2 > a
+        const nameLink = (article as any).querySelector('h2 a');
+        const name = nameLink?.getAttribute('href')?.slice(1) || ''; // Remove leading /
+        
+        // Get description
+        const descElement = (article as any).querySelector('p');
+        const description = descElement?.textContent?.trim() || '';
+        
+        // Get language
+        const langSpan = (article as any).querySelector('[itemprop="programmingLanguage"]');
+        const language = langSpan?.textContent?.trim() || '';
+        
+        // Get stars - look for the star icon's parent
+        const allLinks = (article as any).querySelectorAll('a');
+        const starLink = Array.from(allLinks || []).find((a: any) => 
+          a?.getAttribute?.('href')?.includes?.('/stargazers')
+        );
+        const starsText = (starLink as any)?.textContent?.trim()?.replace?.(/,/g, '') || '0';
+        const stars = parseInt(starsText) || 0;
+        
+        // Get stars this period
+        const starsSpan = (article as any).querySelector('span.d-inline-block.float-sm-right');
+        const starsThisPeriod = starsSpan?.textContent?.trim()?.split(' ')[0]?.replace(/,/g, '') || '0';
+        
+        if (name) {
+          repos.push({
+            name,
+            description,
+            stars,
+            starsThisWeek: parseInt(starsThisPeriod) || 0,
+            language,
+            url: `https://github.com/${name}`,
+          });
+        }
+      } catch (e) {
+        console.error('Error parsing repo:', e);
+      }
+    }
+
+    console.log(`Successfully scraped ${repos.length} trending repos`);
 
     return new Response(
-      JSON.stringify({ repos }),
+      JSON.stringify({ repos: repos.slice(0, 10) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
