@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { RepoSearch, TimeFilter } from "@/components/RepoSearch";
 import { PRList } from "@/components/PRList";
 import { ChatInterface } from "@/components/ChatInterface";
@@ -28,6 +28,8 @@ interface PR {
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const params = useParams<{ owner: string; repo: string }>();
+  const navigate = useNavigate();
   const [prs, setPRs] = useState<PR[]>([]);
   const [issues, setIssues] = useState<PR[]>([]);
   const [selectedPR, setSelectedPR] = useState<PR | null>(null);
@@ -38,6 +40,14 @@ const Index = () => {
 
   // Load repo from URL on mount
   useEffect(() => {
+    // Check route params first (e.g., /owner/repo)
+    if (params.owner && params.repo && !currentRepo) {
+      const repoPath = `${params.owner}/${params.repo}`;
+      handleSearch(repoPath, "14d", "");
+      return;
+    }
+    
+    // Fall back to query params (e.g., ?repo=owner/repo)
     const repoFromUrl = searchParams.get("repo");
     if (repoFromUrl && !currentRepo) {
       handleSearch(repoFromUrl, "14d", "");
@@ -74,8 +84,8 @@ const Index = () => {
     setSelectedIssue(null);
     setCurrentRepo(repo);
     
-    // Update URL with repo parameter
-    setSearchParams({ repo });
+    // Update URL to use clean route format
+    navigate(`/${repo}`, { replace: true });
 
     try {
       // Fetch PRs (get more to ensure we have enough after filtering)
