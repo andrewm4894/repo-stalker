@@ -9,9 +9,10 @@ export type TimeFilter = "7d" | "30d" | "90d" | "all";
 interface RepoSearchProps {
   onSearch: (repo: string, filter: TimeFilter, searchTerm: string) => void;
   isLoading: boolean;
+  currentRepo?: string;
 }
 
-export const RepoSearch = ({ onSearch, isLoading }: RepoSearchProps) => {
+export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps) => {
   const [repo, setRepo] = useState("");
   const [filter, setFilter] = useState<TimeFilter>("30d");
   const [searchTerm, setSearchTerm] = useState("");

@@ -5,6 +5,7 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
+import { RepoHistory, addRepoToHistory } from "@/components/RepoHistory";
 
 interface PR {
   number: number;
@@ -28,6 +29,7 @@ const Index = () => {
   const [selectedIssue, setSelectedIssue] = useState<PR | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"prs" | "issues">("prs");
+  const [currentRepo, setCurrentRepo] = useState<string>("");
 
   const filterByDate = (items: PR[], filter: TimeFilter): PR[] => {
     if (filter === "all") return items;
@@ -57,6 +59,10 @@ const Index = () => {
     setIssues([]);
     setSelectedPR(null);
     setSelectedIssue(null);
+    setCurrentRepo(repo);
+    
+    // Add to history
+    addRepoToHistory(repo);
 
     try {
       // Fetch PRs (get more to ensure we have enough after filtering)
@@ -123,7 +129,19 @@ const Index = () => {
         <Logo />
 
         {/* Search */}
-        <RepoSearch onSearch={handleSearch} isLoading={isLoading} />
+        <RepoSearch onSearch={handleSearch} isLoading={isLoading} currentRepo={currentRepo} />
+        
+        {/* History */}
+        <RepoHistory 
+          onSelectRepo={(repo) => {
+            const repoSearchElement = document.querySelector('input[placeholder*="owner/repo"]') as HTMLInputElement;
+            if (repoSearchElement) {
+              repoSearchElement.value = repo;
+              repoSearchElement.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }}
+          currentRepo={currentRepo}
+        />
 
         {/* Main Content */}
         {currentItems.length > 0 && (
