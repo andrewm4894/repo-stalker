@@ -41,8 +41,11 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
   const generateSummary = async () => {
     setIsLoading(true);
     try {
+      // Get PostHog distinct ID
+      const distinctId = (window as any).posthog?.get_distinct_id?.() || 'anonymous';
+      
       const { data, error } = await supabase.functions.invoke('summarize-items', {
-        body: { items, type }
+        body: { items, type, distinctId }
       });
 
       if (error) {

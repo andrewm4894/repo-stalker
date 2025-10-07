@@ -6,13 +6,33 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const POSTHOG_API_KEY = 'phc_ABOAagCSNfMOUWin6A6Tda0WuhzWLFSXjSgSiq9KKBs';
+const POSTHOG_HOST = 'https://us.i.posthog.com';
+
+async function capturePostHogEvent(eventName: string, properties: any, distinctId: string) {
+  try {
+    await fetch(`${POSTHOG_HOST}/capture/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: POSTHOG_API_KEY,
+        event: eventName,
+        properties: { distinct_id: distinctId, ...properties },
+        timestamp: new Date().toISOString(),
+      }),
+    });
+  } catch (error) {
+    console.error('PostHog capture error:', error);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { items, type } = await req.json();
+    const { items, type, distinctId } = await req.json();
     
     if (!items || items.length === 0) {
       return new Response(
@@ -43,6 +63,10 @@ Keep the summary brief (3-5 sentences) and actionable.`;
     const userPrompt = `Please summarize these ${items.length} ${itemType.toLowerCase()}:\n\n${itemsText}`;
 
     console.log(`Generating summary for ${items.length} ${itemType.toLowerCase()}`);
+
+    const startTime = Date.now();
+    const traceId = crypto.randomUUID();
+    const generationId = crypto.randomUUID();
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -87,7 +111,28 @@ Keep the summary brief (3-5 sentences) and actionable.`;
       throw new Error('No summary generated');
     }
 
+    const endTime = Date.now();
+    const latency = (endTime - startTime) / 1000;
+
     console.log('Summary generated successfully');
+
+    // Track AI generation in PostHog
+    if (distinctId) {
+      await capturePostHogEvent('$ai_generation', {
+        $ai_trace_id: traceId,
+        $ai_generation_id: generationId,
+        $ai_model: 'google/gemini-2.5-flash',
+        $ai_input_tokens: data.usage?.prompt_tokens || 0,
+        $ai_output_tokens: data.usage?.completion_tokens || 0,
+        $ai_total_tokens: data.usage?.total_tokens || 0,
+        $ai_latency: latency,
+        $ai_input: userPrompt,
+        $ai_output: summary,
+        item_count: items.length,
+        item_type: itemType,
+        success: true,
+      }, distinctId);
+    }
 
     return new Response(
       JSON.stringify({ summary }),
@@ -96,6 +141,19 @@ Keep the summary brief (3-5 sentences) and actionable.`;
 
   } catch (error) {
     console.error('Error in summarize-items function:', error);
+    
+    // Track failed AI generation in PostHog
+    const { distinctId } = await req.json().catch(() => ({}));
+    if (distinctId) {
+      await capturePostHogEvent('$ai_generation', {
+        $ai_trace_id: crypto.randomUUID(),
+        $ai_generation_id: crypto.randomUUID(),
+        $ai_model: 'google/gemini-2.5-flash',
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }, distinctId);
+    }
+    
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
