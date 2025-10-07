@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User as UserIcon } from "lucide-react";
+import { Send, User as UserIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 
 interface Message {
   role: "user" | "assistant";
@@ -79,7 +80,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
   return (
     <div className="glass rounded-2xl p-4 h-full flex flex-col">
       <div className="flex items-center gap-2 mb-4">
-        <Bot className="w-5 h-5 text-accent" />
+        <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5" />
         <h3 className="font-semibold">Chat</h3>
       </div>
 
@@ -97,7 +98,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
             >
               {msg.role === "assistant" && (
                 <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-accent" />
+                  <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5" />
                 </div>
               )}
               <div
@@ -131,7 +132,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
           {isLoading && (
             <div className="flex gap-3 justify-start">
               <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-accent animate-pulse" />
+                <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5 animate-pulse" />
               </div>
               <div className="rounded-lg p-3 bg-secondary">
                 <div className="flex gap-1">

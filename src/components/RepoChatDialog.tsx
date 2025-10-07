@@ -9,10 +9,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, X } from "lucide-react";
+import { Loader2, Send, X, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 
 interface Message {
   role: "user" | "assistant";
@@ -132,8 +133,13 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type }: RepoChatDial
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
+                    {msg.role === "assistant" && (
+                      <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                        <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5" />
+                      </div>
+                    )}
                     <div
                       className={`max-w-[80%] rounded-lg p-3 ${
                         msg.role === "user"
@@ -149,10 +155,18 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type }: RepoChatDial
                         <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                       )}
                     </div>
+                    {msg.role === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <UserIcon className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
                   </div>
                 ))}
                 {isLoading && (
-                  <div className="flex justify-start">
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                      <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5 animate-pulse" />
+                    </div>
                     <div className="bg-muted rounded-lg p-3">
                       <Loader2 className="w-4 h-4 animate-spin" />
                     </div>
