@@ -27,13 +27,21 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [summary, setSummary] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [lastType, setLastType] = useState<string>(type);
   const { toast } = useToast();
+
+  // Reset summary when type changes
+  if (type !== lastType) {
+    setSummary("");
+    setLastType(type);
+    setIsOpen(false);
+  }
 
   const handleExpand = async () => {
     const newState = !isOpen;
     setIsOpen(newState);
     
-    // Only generate summary if expanding and we don't have one yet
+    // Generate summary if expanding and we don't have one yet
     if (newState && !summary && items.length > 0) {
       await generateSummary();
     }
