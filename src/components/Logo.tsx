@@ -1,11 +1,14 @@
-import { Eye, Github } from "lucide-react";
+import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 
 export const Logo = () => {
   return (
     <div className="flex items-center justify-center gap-3 mb-8">
       <div className="relative">
-        <Github className="w-12 h-12 text-primary" />
-        <Eye className="w-5 h-5 text-accent absolute -bottom-1 -right-1 animate-pulse" />
+        <img 
+          src={stalkerLogo} 
+          alt="RepoStalker Logo - GitHub Octocat with spy stalker" 
+          className="w-16 h-16 animate-pulse"
+        />
       </div>
       <div className="flex flex-col">
         <h1 className="text-5xl font-bold terminal-text tracking-wider">
