@@ -135,11 +135,7 @@ const Index = () => {
         {/* History */}
         <RepoHistory 
           onSelectRepo={(repo) => {
-            const repoSearchElement = document.querySelector('input[placeholder*="owner/repo"]') as HTMLInputElement;
-            if (repoSearchElement) {
-              repoSearchElement.value = repo;
-              repoSearchElement.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            handleSearch(repo, "30d", "");
           }}
           currentRepo={currentRepo}
         />
