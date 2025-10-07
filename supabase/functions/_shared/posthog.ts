@@ -15,9 +15,9 @@ export async function capturePostHogEvent(
       body: JSON.stringify({
         api_key: POSTHOG_API_KEY,
         event: eventName,
+        distinct_id: distinctId,
         properties: {
           ...properties,
-          distinct_id: distinctId,
         },
         timestamp: new Date().toISOString(),
       }),
