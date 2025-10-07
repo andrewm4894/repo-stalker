@@ -178,7 +178,7 @@ const Index = () => {
             )}
 
             {/* Chat Panel - Top */}
-            <div className="h-[400px]">
+            <div className={currentSelected ? "h-[400px]" : "h-[120px]"}>
               {currentSelected ? (
                 <ChatInterface
                   context={currentSelected.body || "No description provided"}
@@ -189,16 +189,16 @@ const Index = () => {
                   key={`${activeTab}-${currentSelected.number}`}
                 />
               ) : (
-                <div className="glass rounded-2xl p-8 h-full flex items-center justify-center">
-                  <p className="text-muted-foreground text-center">
-                    Select a {activeTab === "prs" ? "pull request" : "issue"} to start chatting
+                <div className="glass rounded-2xl p-6 h-full flex items-center justify-center">
+                  <p className="text-muted-foreground text-center text-sm">
+                    👈 Select a {activeTab === "prs" ? "pull request" : "issue"} from the list below to start chatting
                   </p>
                 </div>
               )}
             </div>
 
             {/* PR/Issue List - Bottom */}
-            <div className="h-[500px]">
+            <div className={currentSelected ? "h-[500px]" : "h-[600px]"}>
               <TabsContent value="prs" className="h-full mt-0">
                 <PRList
                   items={prs}
