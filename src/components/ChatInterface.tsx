@@ -15,9 +15,12 @@ interface Message {
 interface ChatInterfaceProps {
   context: string;
   title: string;
+  prUrl: string;
+  prNumber: number;
+  repoFullName: string;
 }
 
-export const ChatInterface = ({ context, title }: ChatInterfaceProps) => {
+export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +54,9 @@ export const ChatInterface = ({ context, title }: ChatInterfaceProps) => {
           message: userMessage,
           context,
           title,
+          prUrl,
+          prNumber,
+          repoFullName,
           history: messages,
           distinctId: getDistinctId(),
         },

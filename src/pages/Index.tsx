@@ -152,6 +152,9 @@ const Index = () => {
                 <ChatInterface
                   context={currentSelected.body || "No description provided"}
                   title={`${activeTab === "prs" ? "Pull Request" : "Issue"} #${currentSelected.number}: ${currentSelected.title}`}
+                  prUrl={currentSelected.html_url}
+                  prNumber={currentSelected.number}
+                  repoFullName={currentRepo}
                   key={`${activeTab}-${currentSelected.number}`}
                 />
               ) : (
