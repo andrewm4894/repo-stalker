@@ -153,14 +153,19 @@ const Index = () => {
           <div className="space-y-4">
             {/* Repo Header with Save Button */}
             {currentRepo && (
-              <div className="glass rounded-2xl p-4 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold">{currentRepo}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {prs.length} PRs • {issues.length} Issues
-                  </p>
+              <div className="space-y-4">
+                <div className="glass rounded-2xl p-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold">{currentRepo}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {prs.length} PRs • {issues.length} Issues
+                    </p>
+                  </div>
+                  <SaveRepoButton repo={currentRepo} />
                 </div>
-                <SaveRepoButton repo={currentRepo} />
+                
+                {/* AI Summary */}
+                <SummaryBox items={currentItems} type={activeTab === "prs" ? "pr" : "issue"} />
               </div>
             )}
 
@@ -191,8 +196,7 @@ const Index = () => {
                   <TabsTrigger value="prs">Pull Requests</TabsTrigger>
                   <TabsTrigger value="issues">Issues</TabsTrigger>
                 </TabsList>
-                <TabsContent value="prs" className="flex-1 mt-0 space-y-4">
-                  <SummaryBox items={prs} type="pr" />
+                <TabsContent value="prs" className="flex-1 mt-0">
                   <PRList
                     items={prs}
                     selectedId={selectedPR?.number || null}
@@ -200,8 +204,7 @@ const Index = () => {
                     type="pr"
                   />
                 </TabsContent>
-                <TabsContent value="issues" className="flex-1 mt-0 space-y-4">
-                  <SummaryBox items={issues} type="issue" />
+                <TabsContent value="issues" className="flex-1 mt-0">
                   <PRList
                     items={issues}
                     selectedId={selectedIssue?.number || null}
