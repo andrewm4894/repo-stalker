@@ -151,7 +151,20 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
                     >
                       {msg.role === "assistant" ? (
                         <div className="prose prose-sm max-w-none dark:prose-invert">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                          <ReactMarkdown
+                            components={{
+                              a: ({ node, ...props }) => (
+                                <a
+                                  {...props}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                />
+                              ),
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
                         </div>
                       ) : (
                         <p className="text-sm whitespace-pre-wrap">{msg.content}</p>

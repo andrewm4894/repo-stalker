@@ -116,7 +116,20 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
                     prose-strong:text-foreground prose-strong:font-semibold
                     prose-ul:my-2 prose-ol:my-2
                     prose-li:my-1">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown
+                      components={{
+                        a: ({ node, ...props }) => (
+                          <a
+                            {...props}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-accent hover:underline"
+                          />
+                        ),
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
                   </div>
                 ) : (
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
