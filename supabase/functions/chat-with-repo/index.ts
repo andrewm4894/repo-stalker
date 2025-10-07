@@ -101,9 +101,13 @@ You have access to ${items.length} ${itemType} and can use tools to:
 
 When responding:
 - Be concise and relevant
-- Reference specific ${type === 'pr' ? 'PR' : 'Issue'} numbers when discussing them
+- ALWAYS include GitHub URLs when discussing specific ${type === 'pr' ? 'PRs' : 'issues'} - the tools provide these URLs
+- Reference specific ${type === 'pr' ? 'PR' : 'Issue'} numbers with their links (e.g., "#123: Title - https://github.com/...")
 - Use tools to provide accurate information
 - Summarize findings clearly
+- When users ask for links, provide the full GitHub URLs from the tool data
+
+IMPORTANT: You HAVE access to GitHub URLs through the tools - always share them when relevant!
 
 Available ${itemType}:
 ${items.slice(0, 50).map((item: any) => 
