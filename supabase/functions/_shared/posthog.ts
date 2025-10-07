@@ -4,7 +4,8 @@ export const POSTHOG_HOST = 'https://us.i.posthog.com';
 export async function capturePostHogEvent(
   eventName: string,
   properties: any,
-  distinctId: string
+  distinctId: string,
+  spanName?: string
 ) {
   try {
     await fetch(`${POSTHOG_HOST}/capture/`, {
@@ -18,6 +19,7 @@ export async function capturePostHogEvent(
         distinct_id: distinctId,
         properties: {
           ...properties,
+          ...(spanName && { $ai_span_name: spanName }),
         },
         timestamp: new Date().toISOString(),
       }),

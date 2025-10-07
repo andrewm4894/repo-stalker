@@ -197,7 +197,7 @@ When responding:
           $ai_latency_ms: Date.now() - startTime,
           item_type: type,
           item_count: items.length,
-        }, distinctId || 'anonymous');
+        }, distinctId || 'anonymous', 'repo_chat');
         
         throw new Error(`AI API error: ${response.status}`);
       }
@@ -225,7 +225,7 @@ When responding:
           item_count: items.length,
           conversation_length: history.length + 1,
           tool_calls_made: iteration - 1,
-        }, distinctId || 'anonymous');
+        }, distinctId || 'anonymous', 'repo_chat');
 
         return new Response(
           JSON.stringify({ response: assistantMessage.content }),

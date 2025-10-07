@@ -148,7 +148,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           $ai_error: errorText,
           $ai_latency_ms: Date.now() - startTime,
           pr_title: title,
-        }, distinctId || 'anonymous');
+        }, distinctId || 'anonymous', 'pr_chat');
         
         throw new Error(`AI API error: ${response.status}`);
       }
@@ -178,7 +178,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           pr_title: title,
           conversation_length: history.length + 1,
           tool_calls_made: iteration,
-        }, distinctId || 'anonymous');
+        }, distinctId || 'anonymous', 'pr_chat');
 
         break;
       }
