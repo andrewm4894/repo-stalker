@@ -9,44 +9,37 @@ serve(async (req) => {
   try {
     const { language, since } = await req.json();
     
-    // Calculate date for "since" parameter (default to weekly)
-    const daysAgo = since === 'daily' ? 1 : since === 'monthly' ? 30 : 7;
-    const date = new Date();
-    date.setDate(date.getDate() - daysAgo);
-    const dateStr = date.toISOString().split('T')[0];
+    // Use GitHub trending API scraper service
+    // This provides data that matches github.com/trending
+    const period = since === 'daily' ? 'daily' : since === 'monthly' ? 'monthly' : 'weekly';
+    const langParam = language && language !== 'all' ? `/${language}` : '';
     
-    // Build GitHub search query for trending repos
-    let query = `created:>${dateStr} stars:>10`;
-    if (language && language !== 'all') {
-      query += ` language:${language}`;
-    }
+    console.log(`Fetching trending repos for period: ${period}, language: ${langParam || 'all'}`);
     
-    console.log('Fetching trending repos with query:', query);
-    
-    // Fetch from GitHub API
+    // Fetch from trending API
     const response = await fetch(
-      `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=10`,
+      `https://gh-trending-api.herokuapp.com/repositories${langParam}?since=${period}`,
       {
         headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Repo-Stalker-App',
+          'Accept': 'application/json',
         },
       }
     );
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
+      throw new Error(`Trending API error: ${response.status}`);
     }
 
     const data = await response.json();
     
-    // Transform the data to a simpler format
-    const repos = data.items.map((repo: any) => ({
-      name: repo.full_name,
+    // Transform the data to our format
+    const repos = data.slice(0, 10).map((repo: any) => ({
+      name: repo.author + '/' + repo.name,
       description: repo.description,
-      stars: repo.stargazers_count,
+      stars: repo.stars,
+      starsThisWeek: repo.currentPeriodStars,
       language: repo.language,
-      url: repo.html_url,
+      url: repo.url,
     }));
 
     console.log(`Found ${repos.length} trending repos`);
