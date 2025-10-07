@@ -13,6 +13,7 @@ import { Loader2, Send, X, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 
 interface Message {
@@ -152,6 +153,7 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
                       {msg.role === "assistant" ? (
                         <div className="prose prose-sm max-w-none dark:prose-invert">
                           <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
                             components={{
                               a: ({ node, ...props }) => (
                                 <a

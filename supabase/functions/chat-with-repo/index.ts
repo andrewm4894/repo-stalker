@@ -151,8 +151,8 @@ When responding:
 - Use tools only when you need to search, filter, or get additional details
 - For questions like "show me bug reports", filter the context above for items with "bug" label
 - Be concise and relevant
-- ALWAYS include GitHub URLs when discussing specific ${type === 'pr' ? 'PRs' : 'issues'}
-- Reference specific ${type === 'pr' ? 'PR' : 'Issue'} numbers with their links (e.g., "#123: Title - https://github.com/...")
+- ALWAYS format GitHub URLs as proper Markdown links for clickability: [#123](https://github.com/...)
+- Reference specific ${type === 'pr' ? 'PR' : 'Issue'} numbers with their links
 - Summarize findings clearly`;
 
     // Build messages array

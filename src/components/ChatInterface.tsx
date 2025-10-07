@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 
 interface Message {
@@ -117,6 +118,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
                     prose-ul:my-2 prose-ol:my-2
                     prose-li:my-1">
                     <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
                       components={{
                         a: ({ node, ...props }) => (
                           <a
