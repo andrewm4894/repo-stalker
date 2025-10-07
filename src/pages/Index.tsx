@@ -150,18 +150,26 @@ const Index = () => {
 
         {/* Main Content */}
         {currentItems.length > 0 && (
-          <div className="space-y-4">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "prs" | "issues")} className="space-y-4">
             {/* Repo Header with Save Button */}
             {currentRepo && (
               <div className="space-y-4">
-                <div className="glass rounded-2xl p-4 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold">{currentRepo}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {prs.length} PRs • {issues.length} Issues
-                    </p>
+                <div className="glass rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="text-lg font-semibold">{currentRepo}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {prs.length} PRs • {issues.length} Issues
+                      </p>
+                    </div>
+                    <SaveRepoButton repo={currentRepo} />
                   </div>
-                  <SaveRepoButton repo={currentRepo} />
+                  
+                  {/* PR/Issue Tabs */}
+                  <TabsList className="w-full">
+                    <TabsTrigger value="prs" className="flex-1">Pull Requests ({prs.length})</TabsTrigger>
+                    <TabsTrigger value="issues" className="flex-1">Issues ({issues.length})</TabsTrigger>
+                  </TabsList>
                 </div>
                 
                 {/* AI Summary */}
@@ -191,30 +199,24 @@ const Index = () => {
 
             {/* PR/Issue List - Bottom */}
             <div className="h-[500px]">
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "prs" | "issues")} className="h-full flex flex-col">
-                <TabsList className="glass mb-4">
-                  <TabsTrigger value="prs">Pull Requests</TabsTrigger>
-                  <TabsTrigger value="issues">Issues</TabsTrigger>
-                </TabsList>
-                <TabsContent value="prs" className="flex-1 mt-0">
-                  <PRList
-                    items={prs}
-                    selectedId={selectedPR?.number || null}
-                    onSelect={setSelectedPR}
-                    type="pr"
-                  />
-                </TabsContent>
-                <TabsContent value="issues" className="flex-1 mt-0">
-                  <PRList
-                    items={issues}
-                    selectedId={selectedIssue?.number || null}
-                    onSelect={setSelectedIssue}
-                    type="issue"
-                  />
-                </TabsContent>
-              </Tabs>
+              <TabsContent value="prs" className="h-full mt-0">
+                <PRList
+                  items={prs}
+                  selectedId={selectedPR?.number || null}
+                  onSelect={setSelectedPR}
+                  type="pr"
+                />
+              </TabsContent>
+              <TabsContent value="issues" className="h-full mt-0">
+                <PRList
+                  items={issues}
+                  selectedId={selectedIssue?.number || null}
+                  onSelect={setSelectedIssue}
+                  type="issue"
+                />
+              </TabsContent>
             </div>
-          </div>
+          </Tabs>
         )}
       </div>
     </div>
