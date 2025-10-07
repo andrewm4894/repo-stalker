@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Github, Calendar, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,13 @@ export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps
   const [repo, setRepo] = useState("");
   const [filter, setFilter] = useState<TimeFilter>("14d");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Auto-refresh when filter or searchTerm changes if we have a repo loaded
+  useEffect(() => {
+    if (currentRepo && !isLoading) {
+      onSearch(currentRepo, filter, searchTerm.trim());
+    }
+  }, [filter, searchTerm]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
