@@ -8,17 +8,17 @@
 
 RepoStalker helps developers quickly catch up on repository activity using AI-powered insights. Chat with pull requests, issues, and entire repositories to understand what's happening without reading through everything manually.
 
-## ✨ Features
+## Features
 
-- 🔍 **Repository Search**: Search and save your favorite GitHub repositories
-- 💬 **AI Chat with PRs**: Have natural conversations about pull requests to understand changes quickly
-- 🗨️ **AI Chat with Issues**: Discuss issues and get context without reading full threads
-- 📊 **Smart Summaries**: Get AI-generated summaries of PRs and issues
-- 📈 **Trending Repos**: Discover what's popular on GitHub
-- 💾 **Save Favorites**: Keep track of repositories you care about
-- 🎯 **PostHog Analytics**: Built-in LLM observability with span tracking for different AI interactions
+- **Repository Search**: Search and save your favorite GitHub repositories
+- **AI Chat with PRs**: Have natural conversations about pull requests to understand changes quickly
+- **AI Chat with Issues**: Discuss issues and get context without reading full threads
+- **Smart Summaries**: Get AI-generated summaries of PRs and issues
+- **Trending Repos**: Discover what's popular on GitHub
+- **Save Favorites**: Keep track of repositories you care about
+- **PostHog Analytics**: Built-in LLM observability with span tracking for different AI interactions
 
-## 🏗️ Architecture
+## Architecture
 
 ### Frontend
 - **React + TypeScript**: Type-safe component architecture
@@ -44,7 +44,7 @@ Powered by Lovable AI with support for multiple models:
 - Google Gemini 2.5 Pro/Flash/Flash-Lite
 - OpenAI GPT-5/5-mini/5-nano
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js & npm ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
@@ -65,7 +65,7 @@ npm i
 npm run dev
 ```
 
-## 📝 Development
+## Development
 
 ### Project Structure
 ```
@@ -91,30 +91,30 @@ supabase/
 
 ### Editing the Code
 
-**🔗 Lovable Project**: https://lovable.dev/projects/63423304-e9f8-4756-83be-b3d2375453d6
+**Lovable Project**: https://lovable.dev/projects/63423304-e9f8-4756-83be-b3d2375453d6
 
-**💻 Use Lovable**
+**Use Lovable**
 
 Simply visit the [Lovable Project](https://lovable.dev/projects/63423304-e9f8-4756-83be-b3d2375453d6) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
-**💻 Use your preferred IDE**
+**Use your preferred IDE**
 
 If you want to work locally, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable automatically (bidirectional sync).
 
-**✏️ Edit directly in GitHub**
+**Edit directly in GitHub**
 
 - Navigate to the desired file(s).
 - Click the "Edit" button (pencil icon) at the top right of the file view.
 - Make your changes and commit the changes.
 
-**☁️ Use GitHub Codespaces**
+**Use GitHub Codespaces**
 
 - Click on the "Code" button → "Codespaces" tab → "New codespace"
 - Edit files directly within the Codespace and commit changes
 
-## 🚢 Deployment
+## Deployment
 
 **Via Lovable**
 
@@ -130,12 +130,12 @@ Read more: [Setting up a custom domain](https://docs.lovable.dev/features/custom
 
 After connecting to GitHub, you can deploy the code to any hosting platform (Vercel, Netlify, etc.) while continuing to use Lovable for development.
 
-## 📚 Learn More
+## Learn More
 
 - [Lovable Documentation](https://docs.lovable.dev/)
 - [Lovable Cloud Features](https://docs.lovable.dev/features/cloud)
 - [Lovable AI Features](https://docs.lovable.dev/features/ai)
 
-## 📄 License
+## License
 
 This project was built with [Lovable](https://lovable.dev).
