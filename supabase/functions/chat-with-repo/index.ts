@@ -8,7 +8,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, items, type, history, distinctId } = await req.json();
+    const { message, items, type, summary, history, distinctId } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -115,7 +115,15 @@ serve(async (req) => {
 
     const systemPrompt = `You are a helpful assistant that helps developers understand and analyze GitHub ${itemType}.
 
-You have access to ${items.length} ${itemType}. Here's the complete list with details:
+${summary ? `The user just read this AI-generated summary about these ${itemType}:
+
+"${summary}"
+
+Use this summary as context for the conversation. The user may ask follow-up questions about points mentioned in the summary.
+
+---
+
+` : ''}You have access to ${items.length} ${itemType}. Here's the complete list with details:
 
 ${items.map((item: any) => {
   const labels = item.labels?.map((l: any) => l.name).join(', ') || 'no labels';

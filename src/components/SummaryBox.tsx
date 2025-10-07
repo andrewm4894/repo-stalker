@@ -146,6 +146,7 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
         onOpenChange={setChatOpen}
         items={items}
         type={type}
+        summary={summary}
       />
     </>
   );

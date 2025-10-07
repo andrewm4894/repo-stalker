@@ -25,9 +25,10 @@ interface RepoChatDialogProps {
   onOpenChange: (open: boolean) => void;
   items: any[];
   type: "pr" | "issue";
+  summary?: string;
 }
 
-export const RepoChatDialog = ({ open, onOpenChange, items, type }: RepoChatDialogProps) => {
+export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: RepoChatDialogProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +57,7 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type }: RepoChatDial
           message: userMessage,
           items: items,
           type: type,
+          summary,
           history: messages,
           distinctId
         }
