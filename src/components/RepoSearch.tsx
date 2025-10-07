@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export type TimeFilter = "7d" | "30d" | "90d" | "all";
+export type TimeFilter = "7d" | "14d" | "30d" | "90d" | "all";
 
 interface RepoSearchProps {
   onSearch: (repo: string, filter: TimeFilter, searchTerm: string) => void;
@@ -14,7 +14,7 @@ interface RepoSearchProps {
 
 export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps) => {
   const [repo, setRepo] = useState("");
-  const [filter, setFilter] = useState<TimeFilter>("30d");
+  const [filter, setFilter] = useState<TimeFilter>("14d");
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,6 +63,7 @@ export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="7d">Last 7 days</SelectItem>
+                  <SelectItem value="14d">Last 14 days</SelectItem>
                   <SelectItem value="30d">Last 30 days</SelectItem>
                   <SelectItem value="90d">Last 90 days</SelectItem>
                   <SelectItem value="all">All time</SelectItem>

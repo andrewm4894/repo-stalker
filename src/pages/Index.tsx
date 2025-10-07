@@ -36,7 +36,7 @@ const Index = () => {
     if (filter === "all") return items;
     
     const now = new Date();
-    const daysMap = { "7d": 7, "30d": 30, "90d": 90 };
+    const daysMap = { "7d": 7, "14d": 14, "30d": 30, "90d": 90 };
     const days = daysMap[filter];
     const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     
@@ -135,7 +135,7 @@ const Index = () => {
         {/* History */}
         <RepoHistory 
           onSelectRepo={(repo) => {
-            handleSearch(repo, "30d", "");
+            handleSearch(repo, "14d", "");
           }}
           currentRepo={currentRepo}
         />
