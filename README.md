@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="./public/favicon.svg" alt="Repo Stalker Logo" width="200" />
+</div>
+
 # Welcome to your Lovable project
 
 ## Project info
