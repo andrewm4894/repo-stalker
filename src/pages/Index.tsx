@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { RepoHistory, addRepoToHistory } from "@/components/RepoHistory";
+import { SummaryBox } from "@/components/SummaryBox";
 
 interface PR {
   number: number;
@@ -173,7 +174,8 @@ const Index = () => {
                   <TabsTrigger value="prs">Pull Requests</TabsTrigger>
                   <TabsTrigger value="issues">Issues</TabsTrigger>
                 </TabsList>
-                <TabsContent value="prs" className="flex-1 mt-0">
+                <TabsContent value="prs" className="flex-1 mt-0 space-y-4">
+                  <SummaryBox items={prs} type="pr" />
                   <PRList
                     items={prs}
                     selectedId={selectedPR?.number || null}
@@ -181,7 +183,8 @@ const Index = () => {
                     type="pr"
                   />
                 </TabsContent>
-                <TabsContent value="issues" className="flex-1 mt-0">
+                <TabsContent value="issues" className="flex-1 mt-0 space-y-4">
+                  <SummaryBox items={issues} type="issue" />
                   <PRList
                     items={issues}
                     selectedId={selectedIssue?.number || null}

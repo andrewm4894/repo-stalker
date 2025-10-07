@@ -1,1 +1,7 @@
 project_id = "hlegnqsvjtoxymrngwgt"
+
+[functions.chat-with-pr]
+verify_jwt = false
+
+[functions.summarize-items]
+verify_jwt = false
