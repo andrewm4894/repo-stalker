@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { RepoSearch, TimeFilter } from "@/components/RepoSearch";
 import { PRList } from "@/components/PRList";
 import { ChatInterface } from "@/components/ChatInterface";
@@ -26,6 +27,7 @@ interface PR {
 }
 
 const Index = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [prs, setPRs] = useState<PR[]>([]);
   const [issues, setIssues] = useState<PR[]>([]);
   const [selectedPR, setSelectedPR] = useState<PR | null>(null);
@@ -33,6 +35,14 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"prs" | "issues">("prs");
   const [currentRepo, setCurrentRepo] = useState<string>("");
+
+  // Load repo from URL on mount
+  useEffect(() => {
+    const repoFromUrl = searchParams.get("repo");
+    if (repoFromUrl && !currentRepo) {
+      handleSearch(repoFromUrl, "14d", "");
+    }
+  }, []);
 
   const filterByDate = (items: PR[], filter: TimeFilter): PR[] => {
     if (filter === "all") return items;
@@ -63,6 +73,9 @@ const Index = () => {
     setSelectedPR(null);
     setSelectedIssue(null);
     setCurrentRepo(repo);
+    
+    // Update URL with repo parameter
+    setSearchParams({ repo });
 
     try {
       // Fetch PRs (get more to ensure we have enough after filtering)
