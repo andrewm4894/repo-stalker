@@ -10,7 +10,6 @@ interface TrendingRepo {
   name: string;
   description: string;
   stars: number;
-  starsThisWeek?: number;
   language: string;
   url: string;
 }
@@ -113,11 +112,6 @@ export const TrendingRepos = ({ onSelectRepo }: TrendingReposProps) => {
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Star className="h-3 w-3" />
                     <span>{repo.stars.toLocaleString()}</span>
-                    {repo.starsThisWeek && (
-                      <span className="text-primary ml-1">
-                        +{repo.starsThisWeek.toLocaleString()} this week
-                      </span>
-                    )}
                   </div>
                   {repo.language && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">

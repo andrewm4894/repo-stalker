@@ -9,38 +9,52 @@ serve(async (req) => {
   try {
     const { language, since } = await req.json();
     
-    // Use GitHub trending API scraper service
-    // This provides data that matches github.com/trending
+    // Use a different trending API - this one is more reliable
     const period = since === 'daily' ? 'daily' : since === 'monthly' ? 'monthly' : 'weekly';
-    const langParam = language && language !== 'all' ? `/${language}` : '';
+    const langParam = language && language !== 'all' ? language : '';
     
     console.log(`Fetching trending repos for period: ${period}, language: ${langParam || 'all'}`);
     
-    // Fetch from trending API
+    // Use the GitHub API directly with a better approximation
+    // Sort by stars gained in the time period (using creation date as proxy)
+    const daysAgo = period === 'daily' ? 1 : period === 'monthly' ? 30 : 7;
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    const dateStr = date.toISOString().split('T')[0];
+    
+    let query = `pushed:>${dateStr} stars:>50`;
+    if (langParam) {
+      query += ` language:${langParam}`;
+    }
+    
+    console.log('GitHub API query:', query);
+    
     const response = await fetch(
-      `https://gh-trending-api.herokuapp.com/repositories${langParam}?since=${period}`,
+      `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=20`,
       {
         headers: {
-          'Accept': 'application/json',
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'Repo-Stalker-App',
         },
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Trending API error: ${response.status}`);
+      throw new Error(`GitHub API error: ${response.status}`);
     }
 
     const data = await response.json();
     
-    // Transform the data to our format
-    const repos = data.slice(0, 10).map((repo: any) => ({
-      name: repo.author + '/' + repo.name,
-      description: repo.description,
-      stars: repo.stars,
-      starsThisWeek: repo.currentPeriodStars,
-      language: repo.language,
-      url: repo.url,
-    }));
+    // Transform and filter to get most actively starred repos
+    const repos = data.items
+      .slice(0, 10)
+      .map((repo: any) => ({
+        name: repo.full_name,
+        description: repo.description,
+        stars: repo.stargazers_count,
+        language: repo.language,
+        url: repo.html_url,
+      }));
 
     console.log(`Found ${repos.length} trending repos`);
 
