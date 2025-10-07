@@ -15,6 +15,11 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    // Generate trace ID for tracking this conversation
+    const traceId = crypto.randomUUID();
+    const generationId = crypto.randomUUID();
+    const startTime = Date.now();
+
     const itemType = type === 'pr' ? 'Pull Requests' : 'Issues';
     
     // Define tools the agent can use
@@ -146,6 +151,20 @@ ${items.length > 50 ? `... and ${items.length - 50} more` : ''}`;
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Lovable AI error:', response.status, errorText);
+        
+        await capturePostHogEvent('$ai_generation', {
+          $ai_trace_id: traceId,
+          $ai_generation_id: generationId,
+          $ai_model: 'google/gemini-2.5-flash',
+          $ai_input: message,
+          $ai_error: errorText,
+          $ai_latency_ms: Date.now() - startTime,
+          item_type: type,
+          item_count: items.length,
+        }, distinctId || 'anonymous');
+        
         throw new Error(`AI API error: ${response.status}`);
       }
 
@@ -155,14 +174,24 @@ ${items.length > 50 ? `... and ${items.length - 50} more` : ''}`;
       // If no tool calls, return the response
       if (!assistantMessage.tool_calls) {
         console.log('Final response generated');
+        const usage = data.usage;
+        const endTime = Date.now();
         
-        if (distinctId) {
-          await capturePostHogEvent('repo_chat_completed', {
-            item_type: type,
-            item_count: items.length,
-            tool_calls_made: iteration - 1,
-          }, distinctId);
-        }
+        await capturePostHogEvent('$ai_generation', {
+          $ai_trace_id: traceId,
+          $ai_generation_id: generationId,
+          $ai_model: 'google/gemini-2.5-flash',
+          $ai_input: message,
+          $ai_output: assistantMessage.content,
+          $ai_input_tokens: usage?.prompt_tokens || 0,
+          $ai_output_tokens: usage?.completion_tokens || 0,
+          $ai_total_tokens: usage?.total_tokens || 0,
+          $ai_latency_ms: endTime - startTime,
+          item_type: type,
+          item_count: items.length,
+          conversation_length: history.length + 1,
+          tool_calls_made: iteration - 1,
+        }, distinctId || 'anonymous');
 
         return new Response(
           JSON.stringify({ response: assistantMessage.content }),
