@@ -8,15 +8,15 @@ serve(async (req) => {
   }
 
   try {
-    const { message, items, type, summary, history, distinctId } = await req.json();
+    const { message, items, type, summary, history, distinctId, chatId } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Generate trace ID for tracking this conversation
-    const traceId = crypto.randomUUID();
+    // Use chatId as trace ID to group the entire conversation
+    const traceId = chatId || crypto.randomUUID();
     const generationId = crypto.randomUUID();
     const startTime = Date.now();
 

@@ -27,6 +27,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [chatId] = useState(() => crypto.randomUUID());
 
   // Get PostHog distinct_id
   const getDistinctId = () => {
@@ -61,6 +62,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
           repoFullName,
           history: messages,
           distinctId: getDistinctId(),
+          chatId,
         },
       });
 

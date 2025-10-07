@@ -35,6 +35,7 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [chatId] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -60,7 +61,8 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
           type: type,
           summary,
           history: messages,
-          distinctId
+          distinctId,
+          chatId
         }
       });
 
