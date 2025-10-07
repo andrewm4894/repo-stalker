@@ -128,17 +128,8 @@ const Index = () => {
         {/* Header */}
         <Logo />
 
-        {/* Search and Save Button */}
-        <div className="flex gap-2 items-start">
-          <div className="flex-1">
-            <RepoSearch onSearch={handleSearch} isLoading={isLoading} currentRepo={currentRepo} />
-          </div>
-          {currentRepo && (
-            <div className="pt-1">
-              <SaveRepoButton repo={currentRepo} />
-            </div>
-          )}
-        </div>
+        {/* Search */}
+        <RepoSearch onSearch={handleSearch} isLoading={isLoading} currentRepo={currentRepo} />
         
         {/* Saved Repos */}
         <SavedRepos 
@@ -160,6 +151,19 @@ const Index = () => {
         {/* Main Content */}
         {currentItems.length > 0 && (
           <div className="space-y-4">
+            {/* Repo Header with Save Button */}
+            {currentRepo && (
+              <div className="glass rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">{currentRepo}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {prs.length} PRs • {issues.length} Issues
+                  </p>
+                </div>
+                <SaveRepoButton repo={currentRepo} />
+              </div>
+            )}
+
             {/* Chat Panel - Top */}
             <div className="h-[400px]">
               {currentSelected ? (
