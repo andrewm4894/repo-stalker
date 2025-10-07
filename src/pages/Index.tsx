@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { RepoHistory, addRepoToHistory } from "@/components/RepoHistory";
 import { SummaryBox } from "@/components/SummaryBox";
+import { TrendingRepos } from "@/components/TrendingRepos";
 
 interface PR {
   number: number;
@@ -139,6 +140,15 @@ const Index = () => {
           }}
           currentRepo={currentRepo}
         />
+
+        {/* Trending Repos - Only show when no repo is loaded */}
+        {!currentRepo && (
+          <TrendingRepos 
+            onSelectRepo={(repo) => {
+              handleSearch(repo, "14d", "");
+            }}
+          />
+        )}
 
         {/* Main Content */}
         {currentItems.length > 0 && (
