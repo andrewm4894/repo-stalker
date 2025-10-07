@@ -1,0 +1,181 @@
+import { useState, useRef, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2, Send, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface RepoChatDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  items: any[];
+  type: "pr" | "issue";
+}
+
+export const RepoChatDialog = ({ open, onOpenChange, items, type }: RepoChatDialogProps) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setIsLoading(true);
+
+    try {
+      const distinctId = (window as any).posthog?.get_distinct_id?.() || 'anonymous';
+      
+      const { data, error } = await supabase.functions.invoke('chat-with-repo', {
+        body: { 
+          message: userMessage,
+          items: items,
+          type: type,
+          history: messages,
+          distinctId
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setMessages(prev => [...prev, { 
+        role: "assistant", 
+        content: data.response 
+      }]);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Failed to send message",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setMessages([]);
+    setInput("");
+  };
+
+  const itemType = type === "pr" ? "Pull Requests" : "Issues";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl h-[600px] flex flex-col">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle>Chat about {itemType}</DialogTitle>
+              <DialogDescription>
+                Ask questions about all {items.length} {itemType.toLowerCase()} in this repository
+              </DialogDescription>
+            </div>
+            {messages.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClear}
+                className="gap-2"
+              >
+                <X className="w-4 h-4" />
+                Clear
+              </Button>
+            )}
+          </div>
+        </DialogHeader>
+
+        <div className="flex-1 flex flex-col gap-4 min-h-0">
+          <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
+            {messages.length === 0 ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="text-center text-muted-foreground max-w-md">
+                  <p className="text-sm mb-4">
+                    I can help you analyze and understand these {itemType.toLowerCase()}. Try asking:
+                  </p>
+                  <ul className="text-xs space-y-1 text-left">
+                    <li>• "What are the most active {type === 'pr' ? 'PRs' : 'issues'}?"</li>
+                    <li>• "Show me all open {type === 'pr' ? 'PRs' : 'issues'} about authentication"</li>
+                    <li>• "Which {type === 'pr' ? 'PRs' : 'issues'} have the most discussion?"</li>
+                    <li>• "Tell me about #{items[0]?.number}"</li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-lg p-3 ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      {msg.role === "assistant" ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-lg p-3">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </ScrollArea>
+
+          <div className="flex gap-2">
+            <Input
+              placeholder={`Ask about these ${itemType.toLowerCase()}...`}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              disabled={isLoading}
+            />
+            <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon">
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
