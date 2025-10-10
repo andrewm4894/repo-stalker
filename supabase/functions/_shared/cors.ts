@@ -2,6 +2,8 @@
 const ALLOWED_ORIGINS = [
   'http://localhost:5173', // Local development
   'http://localhost:3000', // Alternative local dev
+  'https://repo-stalker.com', // Production domain
+  'https://www.repo-stalker.com', // Production domain with www
   /^https:\/\/.*\.lovableproject\.com$/, // Lovable preview domains
   /^https:\/\/.*\.lovable\.app$/, // Lovable production domains
 ];
