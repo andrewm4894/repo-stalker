@@ -68,13 +68,25 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
 
       if (error) throw error;
 
+      // Check for rate limit error in response
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: data.response },
       ]);
     } catch (error) {
       console.error("Chat error:", error);
-      toast.error("Failed to get response. Please try again.");
+      // Check if it's a rate limit error (429)
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("rate limit") || errorMessage.includes("429")) {
+        toast.error("Rate limit exceeded. Please wait a moment and try again.");
+      } else {
+        toast.error("Failed to get response. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }

@@ -75,11 +75,22 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
       }]);
     } catch (error) {
       console.error('Error:', error);
-      toast({
-        title: "Failed to send message",
-        description: error instanceof Error ? error.message : "Please try again",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Please try again";
+      
+      // Check if it's a rate limit error
+      if (errorMessage.includes("rate limit") || errorMessage.includes("Rate limit")) {
+        toast({
+          title: "Rate limit exceeded",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Failed to send message",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

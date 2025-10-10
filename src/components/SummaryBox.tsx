@@ -71,11 +71,22 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
       setSummary(data.summary);
     } catch (error) {
       console.error('Error generating summary:', error);
-      toast({
-        title: "Failed to generate summary",
-        description: error instanceof Error ? error.message : "Please try again later",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Please try again later";
+      
+      // Check if it's a rate limit error
+      if (errorMessage.includes("rate limit") || errorMessage.includes("Rate limit")) {
+        toast({
+          title: "Rate limit exceeded",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Failed to generate summary",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
