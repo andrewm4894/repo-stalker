@@ -9,7 +9,7 @@ interface RateLimitConfig {
 
 const DEFAULT_CONFIG: RateLimitConfig = {
   perIpPerMinute: 10, // 10 requests per minute per IP
-  globalPerHour: 200, // 200 total requests per hour
+  globalPerHour: 50, // 50 total requests per hour
   globalPerDay: 2000, // 2000 total requests per day
 };
 
