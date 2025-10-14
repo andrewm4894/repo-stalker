@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { capturePostHogEvent } from "../_shared/posthog.ts";
-import { checkRateLimit, getClientIP } from "../_shared/rateLimiter.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -11,18 +10,6 @@ serve(async (req) => {
   }
 
   try {
-    // Check rate limits before processing
-    const clientIP = getClientIP(req);
-    const rateLimitCheck = await checkRateLimit(clientIP);
-    
-    if (!rateLimitCheck.allowed) {
-      console.log(`Rate limit exceeded for IP ${clientIP}: ${rateLimitCheck.reason}`);
-      return new Response(
-        JSON.stringify({ error: rateLimitCheck.reason }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const { message, items, type, summary, history, distinctId, chatId } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
