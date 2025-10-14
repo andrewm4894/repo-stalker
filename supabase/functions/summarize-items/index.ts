@@ -2,7 +2,6 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { capturePostHogEvent } from "../_shared/posthog.ts";
-import { checkRateLimit, getClientIP } from "../_shared/rateLimiter.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -12,18 +11,6 @@ serve(async (req) => {
   }
 
   try {
-    // Check rate limits before processing
-    const clientIP = getClientIP(req);
-    const rateLimitCheck = await checkRateLimit(clientIP);
-    
-    if (!rateLimitCheck.allowed) {
-      console.log(`Rate limit exceeded for IP ${clientIP}: ${rateLimitCheck.reason}`);
-      return new Response(
-        JSON.stringify({ error: rateLimitCheck.reason }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const { items, type, distinctId } = await req.json();
     
     if (!items || items.length === 0) {
