@@ -16,13 +16,23 @@ export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps
   const [repo, setRepo] = useState("");
   const [filter, setFilter] = useState<TimeFilter>("14d");
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // Auto-refresh when filter or searchTerm changes if we have a repo loaded
+  // Debounce search term input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Auto-refresh when filter or debouncedSearchTerm changes if we have a repo loaded
   useEffect(() => {
     if (currentRepo && !isLoading) {
-      onSearch(currentRepo, filter, searchTerm.trim());
+      onSearch(currentRepo, filter, debouncedSearchTerm.trim());
     }
-  }, [filter, searchTerm]);
+  }, [filter, debouncedSearchTerm]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
