@@ -5,7 +5,8 @@ export async function capturePostHogEvent(
   eventName: string,
   properties: any,
   distinctId: string,
-  spanName?: string
+  spanName?: string,
+  sessionId?: string
 ) {
   try {
     await fetch(`${POSTHOG_HOST}/capture/`, {
@@ -20,6 +21,7 @@ export async function capturePostHogEvent(
         properties: {
           ...properties,
           ...(spanName && { $ai_span_name: spanName }),
+          ...(sessionId && { $ai_session_id: sessionId }),
         },
         timestamp: new Date().toISOString(),
       }),

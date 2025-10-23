@@ -10,7 +10,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, context, title, prUrl, prNumber, repoFullName, history, distinctId, chatId } = await req.json();
+    const { message, context, title, prUrl, prNumber, repoFullName, history, distinctId, chatId, sessionId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
@@ -150,7 +150,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           $ai_error: errorText,
           $ai_latency_ms: Date.now() - startTime,
           pr_title: title,
-        }, distinctId || 'anonymous', 'pr_chat');
+        }, distinctId || 'anonymous', 'pr_chat', sessionId);
         
         throw new Error(`AI API error: ${response.status}`);
       }
@@ -180,7 +180,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           pr_title: title,
           conversation_length: history.length + 1,
           tool_calls_made: iteration,
-        }, distinctId || 'anonymous', 'pr_chat');
+        }, distinctId || 'anonymous', 'pr_chat', sessionId);
 
         break;
       }

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { RepoChatDialog } from "./RepoChatDialog";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
+import { getSessionId } from "@/lib/sessionId";
 
 interface PR {
   number: number;
@@ -55,9 +56,10 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
     try {
       // Get PostHog distinct ID
       const distinctId = (window as any).posthog?.get_distinct_id?.() || 'anonymous';
+      const sessionId = getSessionId();
       
       const { data, error } = await supabase.functions.invoke('summarize-items', {
-        body: { items, type, distinctId }
+        body: { items, type, distinctId, sessionId }
       });
 
       if (error) {

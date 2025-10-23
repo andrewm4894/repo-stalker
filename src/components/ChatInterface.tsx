@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
+import { getSessionId } from "@/lib/sessionId";
 
 interface Message {
   role: "user" | "assistant";
@@ -52,6 +53,8 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
     setIsLoading(true);
 
     try {
+      const sessionId = getSessionId();
+      
       const { data, error } = await supabase.functions.invoke("chat-with-pr", {
         body: {
           message: userMessage,
@@ -63,6 +66,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
           history: messages,
           distinctId: getDistinctId(),
           chatId,
+          sessionId,
         },
       });
 

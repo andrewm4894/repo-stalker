@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
+import { getSessionId } from "@/lib/sessionId";
 
 interface Message {
   role: "user" | "assistant";
@@ -53,6 +54,7 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
 
     try {
       const distinctId = (window as any).posthog?.get_distinct_id?.() || 'anonymous';
+      const sessionId = getSessionId();
       
       const { data, error } = await supabase.functions.invoke('chat-with-repo', {
         body: { 
@@ -62,7 +64,8 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
           summary,
           history: messages,
           distinctId,
-          chatId
+          chatId,
+          sessionId,
         }
       });
 

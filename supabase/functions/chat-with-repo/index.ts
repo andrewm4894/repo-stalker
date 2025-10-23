@@ -10,7 +10,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, items, type, summary, history, distinctId, chatId } = await req.json();
+    const { message, items, type, summary, history, distinctId, chatId, sessionId } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -199,7 +199,7 @@ When responding:
           $ai_latency_ms: Date.now() - startTime,
           item_type: type,
           item_count: items.length,
-        }, distinctId || 'anonymous', 'repo_chat');
+        }, distinctId || 'anonymous', 'repo_chat', sessionId);
         
         throw new Error(`AI API error: ${response.status}`);
       }
@@ -227,7 +227,7 @@ When responding:
           item_count: items.length,
           conversation_length: history.length + 1,
           tool_calls_made: iteration - 1,
-        }, distinctId || 'anonymous', 'repo_chat');
+        }, distinctId || 'anonymous', 'repo_chat', sessionId);
 
         return new Response(
           JSON.stringify({ response: assistantMessage.content }),

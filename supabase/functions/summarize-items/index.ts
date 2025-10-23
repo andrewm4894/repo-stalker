@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { items, type, distinctId } = await req.json();
+    const { items, type, distinctId, sessionId } = await req.json();
     
     if (!items || items.length === 0) {
       return new Response(
@@ -111,7 +111,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
         item_count: items.length,
         item_type: itemType,
         success: true,
-      }, distinctId, spanName);
+      }, distinctId, spanName, sessionId);
     }
 
     return new Response(
@@ -123,7 +123,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
     console.error('Error in summarize-items function:', error);
     
     // Track failed AI generation in PostHog
-    const { distinctId, type } = await req.json().catch(() => ({}));
+    const { distinctId, type, sessionId } = await req.json().catch(() => ({}));
     if (distinctId) {
       const spanName = type === 'pr' ? 'repo_pr_summary' : 'repo_issue_summary';
       await capturePostHogEvent('$ai_generation', {
@@ -132,7 +132,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
         $ai_model: 'google/gemini-2.5-flash',
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-      }, distinctId, spanName);
+      }, distinctId, spanName, sessionId);
     }
     
     return new Response(
