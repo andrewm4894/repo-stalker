@@ -26,6 +26,16 @@ serve(async (req) => {
     }
 
     const itemType = type === 'pr' ? 'Pull Requests' : 'Issues';
+    
+    // Extract repo name from items for trace naming
+    let repoName = 'unknown';
+    if (items && items.length > 0 && items[0].html_url) {
+      const urlMatch = items[0].html_url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+      if (urlMatch) {
+        repoName = urlMatch[1].replace('/', '_');
+      }
+    }
+    
     const itemsText = items.map((item: any, idx: number) => 
       `${idx + 1}. [${item.state.toUpperCase()}] ${item.title}\n   Author: ${item.user?.login || 'Unknown'}\n   Created: ${item.created_at}\n   Comments: ${item.comments || 0}`
     ).join('\n\n');
@@ -97,7 +107,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
 
     // Track AI generation in PostHog
     if (distinctId) {
-      const spanName = type === 'pr' ? 'repo_pr_summary' : 'repo_issue_summary';
+      const spanName = type === 'pr' ? `repo_pr_summary_${repoName}` : `repo_issue_summary_${repoName}`;
       await capturePostHogEvent('$ai_generation', {
         $ai_trace_id: traceId,
         $ai_generation_id: generationId,
@@ -123,9 +133,17 @@ Keep the summary brief (3-5 sentences) and actionable.`;
     console.error('Error in summarize-items function:', error);
     
     // Track failed AI generation in PostHog
-    const { distinctId, type, sessionId } = await req.json().catch(() => ({}));
+    const { distinctId, type, items: errorItems, sessionId } = await req.json().catch(() => ({}));
     if (distinctId) {
-      const spanName = type === 'pr' ? 'repo_pr_summary' : 'repo_issue_summary';
+      // Try to extract repo name even in error case
+      let repoName = 'unknown';
+      if (errorItems && errorItems.length > 0 && errorItems[0].html_url) {
+        const urlMatch = errorItems[0].html_url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+        if (urlMatch) {
+          repoName = urlMatch[1].replace('/', '_');
+        }
+      }
+      const spanName = type === 'pr' ? `repo_pr_summary_${repoName}` : `repo_issue_summary_${repoName}`;
       await capturePostHogEvent('$ai_generation', {
         $ai_trace_id: crypto.randomUUID(),
         $ai_generation_id: crypto.randomUUID(),

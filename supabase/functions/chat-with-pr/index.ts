@@ -142,6 +142,7 @@ Keep responses focused and practical. Use tools proactively when they would help
         const errorText = await response.text();
         console.error('Lovable AI error:', response.status, errorText);
         
+        const spanName = `pr_chat_${repoFullName.replace('/', '_')}_${prNumber}`;
         await capturePostHogEvent('$ai_generation', {
           $ai_trace_id: traceId,
           $ai_generation_id: generationId,
@@ -150,7 +151,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           $ai_error: errorText,
           $ai_latency_ms: Date.now() - startTime,
           pr_title: title,
-        }, distinctId || 'anonymous', 'pr_chat', sessionId);
+        }, distinctId || 'anonymous', spanName, sessionId);
         
         throw new Error(`AI API error: ${response.status}`);
       }
@@ -167,6 +168,7 @@ Keep responses focused and practical. Use tools proactively when they would help
 
         console.log('AI response received');
 
+        const spanName = `pr_chat_${repoFullName.replace('/', '_')}_${prNumber}`;
         await capturePostHogEvent('$ai_generation', {
           $ai_trace_id: traceId,
           $ai_generation_id: generationId,
@@ -180,7 +182,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           pr_title: title,
           conversation_length: history.length + 1,
           tool_calls_made: iteration,
-        }, distinctId || 'anonymous', 'pr_chat', sessionId);
+        }, distinctId || 'anonymous', spanName, sessionId);
 
         break;
       }

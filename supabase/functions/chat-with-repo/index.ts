@@ -24,6 +24,15 @@ serve(async (req) => {
 
     const itemType = type === 'pr' ? 'Pull Requests' : 'Issues';
     
+    // Extract repo name from items for trace naming
+    let repoName = 'unknown';
+    if (items && items.length > 0 && items[0].html_url) {
+      const urlMatch = items[0].html_url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+      if (urlMatch) {
+        repoName = urlMatch[1].replace('/', '_');
+      }
+    }
+    
     // Define tools the agent can use
     const tools = [
       {
@@ -190,6 +199,7 @@ When responding:
         const errorText = await response.text();
         console.error('Lovable AI error:', response.status, errorText);
         
+        const spanName = `repo_chat_${repoName}`;
         await capturePostHogEvent('$ai_generation', {
           $ai_trace_id: traceId,
           $ai_generation_id: generationId,
@@ -199,7 +209,7 @@ When responding:
           $ai_latency_ms: Date.now() - startTime,
           item_type: type,
           item_count: items.length,
-        }, distinctId || 'anonymous', 'repo_chat', sessionId);
+        }, distinctId || 'anonymous', spanName, sessionId);
         
         throw new Error(`AI API error: ${response.status}`);
       }
@@ -213,6 +223,7 @@ When responding:
         const usage = data.usage;
         const endTime = Date.now();
         
+        const spanName = `repo_chat_${repoName}`;
         await capturePostHogEvent('$ai_generation', {
           $ai_trace_id: traceId,
           $ai_generation_id: generationId,
@@ -227,7 +238,7 @@ When responding:
           item_count: items.length,
           conversation_length: history.length + 1,
           tool_calls_made: iteration - 1,
-        }, distinctId || 'anonymous', 'repo_chat', sessionId);
+        }, distinctId || 'anonymous', spanName, sessionId);
 
         return new Response(
           JSON.stringify({ response: assistantMessage.content }),
