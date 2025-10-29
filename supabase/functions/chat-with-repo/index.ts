@@ -10,7 +10,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, items, type, summary, history, distinctId, chatId, sessionId } = await req.json();
+    const { message, items, type, summary, history, distinctId, chatId, sessionId, model } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -189,7 +189,7 @@ When responding:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: model || 'google/gemini-2.5-flash',
           messages: currentMessages,
           tools: tools,
         }),
@@ -203,7 +203,7 @@ When responding:
         await capturePostHogEvent('$ai_generation', {
           $ai_trace_id: traceId,
           $ai_generation_id: generationId,
-          $ai_model: 'google/gemini-2.5-flash',
+          $ai_model: model || 'google/gemini-2.5-flash',
           $ai_input: message,
           $ai_error: errorText,
           $ai_latency_ms: Date.now() - startTime,
@@ -227,7 +227,7 @@ When responding:
         await capturePostHogEvent('$ai_generation', {
           $ai_trace_id: traceId,
           $ai_generation_id: generationId,
-          $ai_model: 'google/gemini-2.5-flash',
+          $ai_model: model || 'google/gemini-2.5-flash',
           $ai_input: message,
           $ai_output: assistantMessage.content,
           $ai_input_tokens: usage?.prompt_tokens || 0,

@@ -16,6 +16,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 import { getSessionId } from "@/lib/sessionId";
+import { ModelSelector } from "./ModelSelector";
+import { getRandomModel } from "@/lib/modelUtils";
 
 interface Message {
   role: "user" | "assistant";
@@ -37,6 +39,7 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [chatId] = useState(() => crypto.randomUUID());
+  const [selectedModel, setSelectedModel] = useState(() => getRandomModel());
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -66,6 +69,7 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
           distinctId,
           chatId,
           sessionId,
+          model: selectedModel,
         }
       });
 
@@ -117,17 +121,24 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
                 Ask questions about all {items.length} {itemType.toLowerCase()} in this repository
               </DialogDescription>
             </div>
-            {messages.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                className="gap-2"
-              >
-                <X className="w-4 h-4" />
-                Clear
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              <ModelSelector 
+                value={selectedModel} 
+                onChange={setSelectedModel} 
+                disabled={isLoading}
+              />
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClear}
+                  className="gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
         </DialogHeader>
 
