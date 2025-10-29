@@ -9,8 +9,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 import { getSessionId } from "@/lib/sessionId";
-import { ModelSelector } from "./ModelSelector";
-import { getRandomModel } from "@/lib/modelUtils";
 
 interface Message {
   role: "user" | "assistant";
@@ -23,15 +21,15 @@ interface ChatInterfaceProps {
   prUrl: string;
   prNumber: number;
   repoFullName: string;
+  model: string;
 }
 
-export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }: ChatInterfaceProps) => {
+export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName, model }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [chatId] = useState(() => crypto.randomUUID());
-  const [selectedModel, setSelectedModel] = useState(() => getRandomModel());
 
   // Get PostHog distinct_id
   const getDistinctId = () => {
@@ -70,7 +68,7 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
           distinctId: getDistinctId(),
           chatId,
           sessionId,
-          model: selectedModel,
+          model,
         },
       });
 
@@ -102,16 +100,9 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName }:
 
   return (
     <div className="glass rounded-2xl p-4 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5" />
-          <h3 className="font-semibold">Chat</h3>
-        </div>
-        <ModelSelector 
-          value={selectedModel} 
-          onChange={setSelectedModel} 
-          disabled={isLoading}
-        />
+      <div className="flex items-center gap-2 mb-4">
+        <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5" />
+        <h3 className="font-semibold">Chat</h3>
       </div>
 
       <ScrollArea className="flex-1 -mr-4 pr-4 mb-4" ref={scrollRef}>

@@ -24,9 +24,10 @@ interface PR {
 interface SummaryBoxProps {
   items: PR[];
   type: "pr" | "issue";
+  model: string;
 }
 
-export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
+export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [summary, setSummary] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +60,7 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
       const sessionId = getSessionId();
       
       const { data, error } = await supabase.functions.invoke('summarize-items', {
-        body: { items, type, distinctId, sessionId }
+        body: { items, type, distinctId, sessionId, model }
       });
 
       if (error) {
@@ -160,6 +161,7 @@ export const SummaryBox = ({ items, type }: SummaryBoxProps) => {
         items={items}
         type={type}
         summary={summary}
+        model={model}
       />
     </>
   );

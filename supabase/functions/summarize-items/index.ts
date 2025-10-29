@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { items, type, distinctId, sessionId } = await req.json();
+    const { items, type, distinctId, sessionId, model } = await req.json();
     
     if (!items || items.length === 0) {
       return new Response(
@@ -64,7 +64,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: model || 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -111,7 +111,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
       await capturePostHogEvent('$ai_generation', {
         $ai_trace_id: traceId,
         $ai_generation_id: generationId,
-        $ai_model: 'google/gemini-2.5-flash',
+        $ai_model: model || 'google/gemini-2.5-flash',
         $ai_input_tokens: data.usage?.prompt_tokens || 0,
         $ai_output_tokens: data.usage?.completion_tokens || 0,
         $ai_total_tokens: data.usage?.total_tokens || 0,
@@ -133,7 +133,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
     console.error('Error in summarize-items function:', error);
     
     // Track failed AI generation in PostHog
-    const { distinctId, type, items: errorItems, sessionId } = await req.json().catch(() => ({}));
+    const { distinctId, type, items: errorItems, sessionId, model: errorModel } = await req.json().catch(() => ({}));
     if (distinctId) {
       // Try to extract repo name even in error case
       let repoName = 'unknown';
@@ -147,7 +147,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
       await capturePostHogEvent('$ai_generation', {
         $ai_trace_id: crypto.randomUUID(),
         $ai_generation_id: crypto.randomUUID(),
-        $ai_model: 'google/gemini-2.5-flash',
+        $ai_model: errorModel || 'google/gemini-2.5-flash',
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       }, distinctId, spanName, sessionId);

@@ -16,8 +16,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import stalkerLogo from "@/assets/repo-stalker-logo.svg";
 import { getSessionId } from "@/lib/sessionId";
-import { ModelSelector } from "./ModelSelector";
-import { getRandomModel } from "@/lib/modelUtils";
 
 interface Message {
   role: "user" | "assistant";
@@ -30,16 +28,16 @@ interface RepoChatDialogProps {
   items: any[];
   type: "pr" | "issue";
   summary?: string;
+  model: string;
 }
 
-export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: RepoChatDialogProps) => {
+export const RepoChatDialog = ({ open, onOpenChange, items, type, summary, model }: RepoChatDialogProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [chatId] = useState(() => crypto.randomUUID());
-  const [selectedModel, setSelectedModel] = useState(() => getRandomModel());
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -69,7 +67,7 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
           distinctId,
           chatId,
           sessionId,
-          model: selectedModel,
+          model,
         }
       });
 
@@ -121,13 +119,8 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
                 Ask questions about all {items.length} {itemType.toLowerCase()} in this repository
               </DialogDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <ModelSelector 
-                value={selectedModel} 
-                onChange={setSelectedModel} 
-                disabled={isLoading}
-              />
-              {messages.length > 0 && (
+            {messages.length > 0 && (
+              <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -137,8 +130,8 @@ export const RepoChatDialog = ({ open, onOpenChange, items, type, summary }: Rep
                   <X className="w-4 h-4" />
                   Clear
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </DialogHeader>
 

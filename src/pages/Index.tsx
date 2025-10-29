@@ -10,6 +10,8 @@ import { SavedRepos } from "@/components/SavedRepos";
 import { SaveRepoButton } from "@/components/SaveRepoButton";
 import { SummaryBox } from "@/components/SummaryBox";
 import { TrendingRepos } from "@/components/TrendingRepos";
+import { ModelSelector } from "@/components/ModelSelector";
+import { getRandomModel } from "@/lib/modelUtils";
 
 interface PR {
   number: number;
@@ -37,6 +39,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"prs" | "issues">("prs");
   const [currentRepo, setCurrentRepo] = useState<string>("");
+  const [selectedModel, setSelectedModel] = useState(() => getRandomModel());
 
   // Load repo from URL on mount
   useEffect(() => {
@@ -149,7 +152,14 @@ const Index = () => {
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <Logo />
+        <div className="flex items-center justify-between">
+          <Logo />
+          <ModelSelector 
+            value={selectedModel} 
+            onChange={setSelectedModel} 
+            disabled={isLoading}
+          />
+        </div>
 
         {/* Search */}
         <RepoSearch onSearch={handleSearch} isLoading={isLoading} currentRepo={currentRepo} />
@@ -196,7 +206,7 @@ const Index = () => {
                 </div>
                 
                 {/* AI Summary */}
-                <SummaryBox items={currentItems} type={activeTab === "prs" ? "pr" : "issue"} />
+                <SummaryBox items={currentItems} type={activeTab === "prs" ? "pr" : "issue"} model={selectedModel} />
               </div>
             )}
 
@@ -209,6 +219,7 @@ const Index = () => {
                   prUrl={currentSelected.html_url}
                   prNumber={currentSelected.number}
                   repoFullName={currentRepo}
+                  model={selectedModel}
                   key={`${activeTab}-${currentSelected.number}`}
                 />
               ) : (
