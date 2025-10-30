@@ -99,31 +99,31 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName, m
   };
 
   return (
-    <div className="glass rounded-2xl p-4 h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-4">
-        <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5" />
-        <h3 className="font-semibold">Chat</h3>
+    <div className="glass rounded-2xl p-3 md:p-4 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-3 md:mb-4">
+        <img src={stalkerLogo} alt="RepoStalker" className="w-4 h-4 md:w-5 md:h-5" />
+        <h3 className="font-semibold text-sm md:text-base">Chat</h3>
       </div>
 
-      <ScrollArea className="flex-1 -mr-4 pr-4 mb-4" ref={scrollRef}>
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 -mr-4 pr-4 mb-3 md:mb-4" ref={scrollRef}>
+        <div className="space-y-3 md:space-y-4">
           {messages.length === 0 && (
-            <div className="text-center text-muted-foreground py-8">
-              <p>Ask me anything about this {title.includes("Pull Request") ? "PR" : "issue"}!</p>
+            <div className="text-center text-muted-foreground py-4 md:py-8">
+              <p className="text-xs md:text-sm">Ask me anything about this {title.includes("Pull Request") ? "PR" : "issue"}!</p>
             </div>
           )}
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex gap-2 md:gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5" />
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <img src={stalkerLogo} alt="RepoStalker" className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
               )}
               <div
-                className={`rounded-lg p-3 max-w-[80%] ${
+                className={`rounded-lg p-2 md:p-3 max-w-[85%] md:max-w-[80%] ${
                   msg.role === "user"
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary"
@@ -158,16 +158,16 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName, m
                 )}
               </div>
               {msg.role === "user" && (
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <UserIcon className="w-4 h-4 text-primary" />
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <UserIcon className="w-3 h-3 md:w-4 md:h-4 text-primary" />
                 </div>
               )}
             </div>
           ))}
           {isLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                <img src={stalkerLogo} alt="RepoStalker" className="w-5 h-5 animate-pulse" />
+            <div className="flex gap-2 md:gap-3 justify-start">
+              <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <img src={stalkerLogo} alt="RepoStalker" className="w-4 h-4 md:w-5 md:h-5 animate-pulse" />
               </div>
               <div className="rounded-lg p-3 bg-secondary">
                 <div className="flex gap-1">
@@ -181,20 +181,20 @@ export const ChatInterface = ({ context, title, prUrl, prNumber, repoFullName, m
         </div>
       </ScrollArea>
 
-      <div className="flex gap-2">
+      <div className="flex gap-1 md:gap-2">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
           placeholder="Ask about this PR or issue..."
           disabled={isLoading}
-          className="bg-secondary border-border"
+          className="bg-secondary border-border text-sm"
         />
         <Button
           onClick={handleSend}
           disabled={isLoading || !input.trim()}
           size="icon"
-          className="gradient-primary hover:opacity-90 transition-opacity"
+          className="gradient-primary hover:opacity-90 transition-opacity flex-shrink-0"
         >
           <Send className="w-4 h-4" />
         </Button>

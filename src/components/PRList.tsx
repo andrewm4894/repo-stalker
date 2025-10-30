@@ -33,11 +33,11 @@ export const PRList = ({ items, selectedId, onSelect, type }: PRListProps) => {
   };
 
   return (
-    <div className="glass rounded-2xl p-4 h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-4">
-        <GitPullRequest className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold">Recent {type === "pr" ? "Pull Requests" : "Issues"}</h3>
-        <Badge variant="secondary" className="ml-auto">{items.length}</Badge>
+    <div className="glass rounded-2xl p-3 md:p-4 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-3 md:mb-4">
+        <GitPullRequest className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+        <h3 className="font-semibold text-sm md:text-base">Recent {type === "pr" ? "Pull Requests" : "Issues"}</h3>
+        <Badge variant="secondary" className="ml-auto text-xs">{items.length}</Badge>
       </div>
       
       <ScrollArea className="flex-1 -mr-4 pr-4">
@@ -53,23 +53,23 @@ export const PRList = ({ items, selectedId, onSelect, type }: PRListProps) => {
                 }`}
               >
                 <CardHeader 
-                  className="p-4 pb-3"
+                  className="p-3 md:p-4 pb-2 md:pb-3"
                   onClick={() => onSelect(item)}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-2 md:gap-3">
                     <img 
                       src={item.user.avatar_url} 
                       alt={item.user.login}
-                      className="w-8 h-8 rounded-full flex-shrink-0"
+                      className="w-6 h-6 md:w-8 md:h-8 rounded-full flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-sm line-clamp-2 mb-1">
+                      <CardTitle className="text-xs md:text-sm line-clamp-2 mb-1">
                         {item.title}
                       </CardTitle>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <User className="w-3 h-3" />
-                          <span>{item.user.login}</span>
+                          <span className="truncate max-w-[80px] md:max-w-none">{item.user.login}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
@@ -93,25 +93,25 @@ export const PRList = ({ items, selectedId, onSelect, type }: PRListProps) => {
                 
                 {isSelected && (
                   <CardContent 
-                    className="px-4 pb-4 pt-0 space-y-3 animate-accordion-down"
+                    className="px-3 md:px-4 pb-3 md:pb-4 pt-0 space-y-2 md:space-y-3 animate-accordion-down"
                   >
                     {item.body && (
-                      <div className="text-sm text-muted-foreground bg-secondary/50 rounded-lg p-3">
-                        <p className="line-clamp-6 whitespace-pre-wrap">
+                      <div className="text-xs md:text-sm text-muted-foreground bg-secondary/50 rounded-lg p-2 md:p-3">
+                        <p className="line-clamp-4 md:line-clamp-6 whitespace-pre-wrap">
                           {item.body}
                         </p>
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-2">
-                      <Badge variant={item.state === "open" ? "default" : "secondary"}>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={item.state === "open" ? "default" : "secondary"} className="text-xs">
                         {item.state}
                       </Badge>
                       
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="ml-auto"
+                        className="ml-auto text-xs h-8"
                         asChild
                       >
                         <a 
@@ -121,7 +121,8 @@ export const PRList = ({ items, selectedId, onSelect, type }: PRListProps) => {
                           className="flex items-center gap-1"
                         >
                           <ExternalLink className="w-3 h-3" />
-                          <span>View on GitHub</span>
+                          <span className="hidden sm:inline">View on GitHub</span>
+                          <span className="sm:hidden">GitHub</span>
                         </a>
                       </Button>
                     </div>

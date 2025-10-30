@@ -149,10 +149,10 @@ const Index = () => {
   const currentItems = activeTab === "prs" ? prs : issues;
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen p-2 sm:p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-3 md:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
           <Logo />
           <ModelSelector 
             value={selectedModel} 
@@ -211,7 +211,7 @@ const Index = () => {
             )}
 
             {/* Chat Panel - Top */}
-            <div className={currentSelected ? "h-[400px]" : "h-[120px]"}>
+            <div className={currentSelected ? "h-[300px] md:h-[400px]" : "h-[100px] md:h-[120px]"}>
               {currentSelected ? (
                 <ChatInterface
                   context={currentSelected.body || "No description provided"}
@@ -223,8 +223,8 @@ const Index = () => {
                   key={`${activeTab}-${currentSelected.number}`}
                 />
               ) : (
-                <div className="glass rounded-2xl p-6 h-full flex items-center justify-center">
-                  <p className="text-muted-foreground text-center text-sm">
+                <div className="glass rounded-2xl p-4 md:p-6 h-full flex items-center justify-center">
+                  <p className="text-muted-foreground text-center text-xs md:text-sm">
                     👈 Select a {activeTab === "prs" ? "pull request" : "issue"} from the list below to start chatting
                   </p>
                 </div>
@@ -232,7 +232,7 @@ const Index = () => {
             </div>
 
             {/* PR/Issue List - Bottom */}
-            <div className={currentSelected ? "h-[500px]" : "h-[600px]"}>
+            <div className={currentSelected ? "h-[400px] md:h-[500px]" : "h-[500px] md:h-[600px]"}>
               <TabsContent value="prs" className="h-full mt-0">
                 <PRList
                   items={prs}

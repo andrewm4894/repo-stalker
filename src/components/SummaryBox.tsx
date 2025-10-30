@@ -103,16 +103,16 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
 
   return (
     <>
-      <Card className="mb-4">
+      <Card className="mb-3 md:mb-4">
         <Collapsible open={isOpen} onOpenChange={handleExpand}>
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
-              className="w-full justify-between p-4 h-auto hover:bg-accent/50"
+              className="w-full justify-between p-3 md:p-4 h-auto hover:bg-accent/50"
             >
               <div className="flex items-center gap-2">
                 <img src={stalkerLogo} alt="RepoStalker" className="h-4 w-4" />
-                <span className="font-medium">AI Summary of {items.length} {itemType}</span>
+                <span className="font-medium text-xs md:text-sm">AI Summary of {items.length} {itemType}</span>
               </div>
               <ChevronDown
                 className={`h-4 w-4 transition-transform duration-200 ${
@@ -121,16 +121,16 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
               />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="px-4 pb-4">
-            <div className="pt-2 border-t space-y-3">
+          <CollapsibleContent className="px-3 md:px-4 pb-3 md:pb-4">
+            <div className="pt-2 border-t space-y-2 md:space-y-3">
               {isLoading ? (
-                <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Generating summary...</span>
+                <div className="flex items-center justify-center py-4 md:py-8 gap-2 text-muted-foreground">
+                  <Loader2 className="h-3 h-3 md:h-4 md:w-4 animate-spin" />
+                  <span className="text-xs md:text-sm">Generating summary...</span>
                 </div>
               ) : summary ? (
                 <>
-                  <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
+                  <div className="prose prose-sm max-w-none dark:prose-invert text-xs md:text-sm leading-relaxed">
                     <ReactMarkdown>
                       {summary}
                     </ReactMarkdown>
@@ -139,14 +139,14 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
                     variant="outline"
                     size="sm"
                     onClick={() => setChatOpen(true)}
-                    className="w-full gap-2"
+                    className="w-full gap-2 text-xs md:text-sm h-8 md:h-9"
                   >
-                    <MessageSquare className="h-4 w-4" />
+                    <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
                     Chat about these {itemType}
                   </Button>
                 </>
               ) : (
-                <div className="text-sm text-muted-foreground text-center py-4">
+                <div className="text-xs md:text-sm text-muted-foreground text-center py-3 md:py-4">
                   Expand to generate AI summary
                 </div>
               )}

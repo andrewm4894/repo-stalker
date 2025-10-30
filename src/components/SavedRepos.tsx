@@ -85,10 +85,10 @@ export const SavedRepos = ({ onSelectRepo, currentRepo }: SavedReposProps) => {
 
   if (savedRepos.length === 0) {
     return (
-      <div className="glass rounded-2xl p-4">
+      <div className="glass rounded-2xl p-3 md:p-4">
         <div className="flex items-center gap-2 mb-2">
           <Bookmark className="w-4 h-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Saved Repositories</h3>
+          <h3 className="text-xs md:text-sm font-medium">Saved Repositories</h3>
         </div>
         <p className="text-xs text-muted-foreground">
           Save repositories you want to track. Click the bookmark icon when viewing a repo.
@@ -98,19 +98,19 @@ export const SavedRepos = ({ onSelectRepo, currentRepo }: SavedReposProps) => {
   }
 
   return (
-    <div className="glass rounded-2xl p-4">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="glass rounded-2xl p-3 md:p-4">
+      <div className="flex items-center gap-2 mb-2 md:mb-3">
         <Bookmark className="w-4 h-4 text-muted-foreground" />
-        <h3 className="text-sm font-medium">Saved Repositories</h3>
+        <h3 className="text-xs md:text-sm font-medium">Saved Repositories</h3>
         <span className="text-xs text-muted-foreground ml-auto">{savedRepos.length} saved</span>
       </div>
       
-      <ScrollArea className="h-[120px]">
+      <ScrollArea className="h-[100px] md:h-[120px]">
         <div className="space-y-1">
           {savedRepos.map((item) => (
             <div
               key={item.repo}
-              className={`group flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`group flex items-center justify-between w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-colors ${
                 currentRepo === item.repo
                   ? "bg-primary/20 text-primary"
                   : "hover:bg-secondary text-muted-foreground hover:text-foreground"
@@ -118,7 +118,7 @@ export const SavedRepos = ({ onSelectRepo, currentRepo }: SavedReposProps) => {
             >
               <button
                 onClick={() => onSelectRepo(item.repo)}
-                className="flex-1 text-left"
+                className="flex-1 text-left truncate"
               >
                 {item.repo}
               </button>
@@ -129,7 +129,7 @@ export const SavedRepos = ({ onSelectRepo, currentRepo }: SavedReposProps) => {
                   setSavedRepos(getSavedRepos());
                   window.dispatchEvent(new Event('savedReposChanged'));
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/20 rounded"
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/20 rounded flex-shrink-0"
               >
                 <X className="w-3 h-3" />
               </button>
