@@ -131,7 +131,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: model || 'google/gemini-2.5-flash',
+          model: model || 'google/gemini-3-flash-preview',
           messages: currentMessages,
           tools,
           temperature: 0.7,

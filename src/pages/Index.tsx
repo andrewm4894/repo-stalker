@@ -11,7 +11,7 @@ import { SaveRepoButton } from "@/components/SaveRepoButton";
 import { SummaryBox } from "@/components/SummaryBox";
 import { TrendingRepos } from "@/components/TrendingRepos";
 import { ModelSelector } from "@/components/ModelSelector";
-import { getRandomModel } from "@/lib/modelUtils";
+import { DEFAULT_MODEL } from "@/lib/modelUtils";
 
 interface PR {
   number: number;
@@ -39,7 +39,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"prs" | "issues">("prs");
   const [currentRepo, setCurrentRepo] = useState<string>("");
-  const [selectedModel, setSelectedModel] = useState(() => getRandomModel());
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
 
   // Load repo from URL on mount
   useEffect(() => {

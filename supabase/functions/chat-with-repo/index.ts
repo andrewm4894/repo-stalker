@@ -189,7 +189,7 @@ When responding:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: model || 'google/gemini-2.5-flash',
+          model: model || 'google/gemini-3-flash-preview',
           messages: currentMessages,
           tools: tools,
         }),

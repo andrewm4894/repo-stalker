@@ -13,6 +13,8 @@ export const SUPPORTED_MODELS = [
   { value: 'openai/gpt-5-nano', label: 'GPT-5 Nano (Fastest)' },
 ] as const;
 
+export const DEFAULT_MODEL = 'google/gemini-3-flash-preview';
+
 export const getRandomModel = (): string => {
   const randomIndex = Math.floor(Math.random() * SUPPORTED_MODELS.length);
   return SUPPORTED_MODELS[randomIndex].value;
