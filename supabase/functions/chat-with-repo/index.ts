@@ -207,8 +207,10 @@ When responding:
           $ai_provider: (model || 'google/gemini-2.5-flash').split('/')[0],
           $ai_input: [{ role: 'user', content: message }],
           $ai_http_status: response.status,
+          $ai_is_error: true,
           $ai_error: errorText,
           $ai_latency: (Date.now() - startTime) / 1000,
+          $ai_tools: tools,
           item_type: type,
           item_count: items.length,
         }, distinctId || 'anonymous', spanName, sessionId);
