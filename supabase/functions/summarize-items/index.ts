@@ -147,8 +147,9 @@ Keep the summary brief (3-5 sentences) and actionable.`;
         $ai_trace_id: crypto.randomUUID(),
         $ai_generation_id: crypto.randomUUID(),
         $ai_model: errorModel || 'google/gemini-2.5-flash',
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        $ai_provider: (errorModel || 'google/gemini-2.5-flash').split('/')[0],
+        $ai_is_error: true,
+        $ai_error: error instanceof Error ? error.message : 'Unknown error',
       }, distinctId, spanName, sessionId);
     }
     
