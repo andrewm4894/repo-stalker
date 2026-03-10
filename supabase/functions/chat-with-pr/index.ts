@@ -147,9 +147,11 @@ Keep responses focused and practical. Use tools proactively when they would help
           $ai_trace_id: traceId,
           $ai_generation_id: generationId,
           $ai_model: model || 'google/gemini-2.5-flash',
-          $ai_input: message,
+          $ai_provider: (model || 'google/gemini-2.5-flash').split('/')[0],
+          $ai_input: [{ role: 'user', content: message }],
+          $ai_http_status: response.status,
           $ai_error: errorText,
-          $ai_latency_ms: Date.now() - startTime,
+          $ai_latency: (Date.now() - startTime) / 1000,
           pr_title: title,
         }, distinctId || 'anonymous', spanName, sessionId);
         
