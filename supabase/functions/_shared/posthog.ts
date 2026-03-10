@@ -9,7 +9,7 @@ export async function capturePostHogEvent(
   sessionId?: string
 ) {
   try {
-    await fetch(`${POSTHOG_HOST}/capture/`, {
+    await fetch(`${POSTHOG_HOST}/i/v0/e/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

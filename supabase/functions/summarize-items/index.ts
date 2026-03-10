@@ -115,13 +115,11 @@ Keep the summary brief (3-5 sentences) and actionable.`;
         $ai_provider: (model || 'google/gemini-2.5-flash').split('/')[0],
         $ai_input_tokens: data.usage?.prompt_tokens || 0,
         $ai_output_tokens: data.usage?.completion_tokens || 0,
-        $ai_total_tokens: data.usage?.total_tokens || 0,
         $ai_latency: latency,
         $ai_input: [{ role: 'user', content: userPrompt }],
         $ai_output_choices: [{ role: 'assistant', content: summary }],
         item_count: items.length,
         item_type: itemType,
-        success: true,
       }, distinctId, spanName, sessionId);
     }
 
@@ -149,8 +147,9 @@ Keep the summary brief (3-5 sentences) and actionable.`;
         $ai_trace_id: crypto.randomUUID(),
         $ai_generation_id: crypto.randomUUID(),
         $ai_model: errorModel || 'google/gemini-2.5-flash',
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        $ai_provider: (errorModel || 'google/gemini-2.5-flash').split('/')[0],
+        $ai_is_error: true,
+        $ai_error: error instanceof Error ? error.message : 'Unknown error',
       }, distinctId, spanName, sessionId);
     }
     

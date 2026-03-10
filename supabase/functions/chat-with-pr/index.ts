@@ -150,8 +150,10 @@ Keep responses focused and practical. Use tools proactively when they would help
           $ai_provider: (model || 'google/gemini-2.5-flash').split('/')[0],
           $ai_input: [{ role: 'user', content: message }],
           $ai_http_status: response.status,
+          $ai_is_error: true,
           $ai_error: errorText,
           $ai_latency: (Date.now() - startTime) / 1000,
+          $ai_tools: tools,
           pr_title: title,
         }, distinctId || 'anonymous', spanName, sessionId);
         
@@ -180,8 +182,8 @@ Keep responses focused and practical. Use tools proactively when they would help
           $ai_output_choices: [{ role: 'assistant', content: finalResponse }],
           $ai_input_tokens: usage?.prompt_tokens || 0,
           $ai_output_tokens: usage?.completion_tokens || 0,
-          $ai_total_tokens: usage?.total_tokens || 0,
           $ai_latency: (endTime - startTime) / 1000,
+          $ai_tools: tools,
           pr_title: title,
           conversation_length: history.length + 1,
           tool_calls_made: iteration,
