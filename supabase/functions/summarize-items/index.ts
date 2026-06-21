@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { capturePostHogEvent } from "../_shared/posthog.ts";
 import { validateModel, validateItems, badRequest } from "../_shared/validation.ts";
+import { checkRateLimit, getClientIp, rateLimited } from "../_shared/rateLimit.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -12,6 +13,9 @@ serve(async (req) => {
   }
 
   try {
+    const rl = await checkRateLimit(getClientIp(req), "summarize-items");
+    if (!rl.allowed) return rateLimited(rl, corsHeaders);
+
     const { items, type, distinctId, sessionId, model } = await req.json();
 
     if (!items || (Array.isArray(items) && items.length === 0)) {
