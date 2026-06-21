@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { capturePostHogEvent } from "../_shared/posthog.ts";
+import { capturePostHogEvent, capturePostHogException, capturePostHogLog, createEdgeLogger } from "../_shared/posthog.ts";
 import {
   validateModel,
   validateMessage,
@@ -18,10 +18,16 @@ serve(async (req) => {
   }
 
   try {
-    const rl = await checkRateLimit(getClientIp(req), "chat-with-repo");
-    if (!rl.allowed) return rateLimited(rl, corsHeaders);
+    const ip = getClientIp(req);
+    const rl = await checkRateLimit(ip, "chat-with-repo");
+    if (!rl.allowed) {
+      await capturePostHogLog("warn", "Rate limit exceeded", { fn: "chat-with-repo", attributes: { ip, retry_after: rl.retryAfter } });
+      return rateLimited(rl, corsHeaders);
+    }
 
     const { message, items, type, summary, history, distinctId, chatId, sessionId, model } = await req.json();
+    const log = createEdgeLogger("chat-with-repo", { distinctId, sessionId });
+    log.info("Request received", { item_type: type, item_count: items?.length ?? 0, model: model || "default" });
 
     const safeHistory = Array.isArray(history) ? history : [];
     const validationError =
@@ -217,6 +223,7 @@ When responding:
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Lovable AI error:', response.status, errorText);
+        log.error("Lovable AI request failed", { status: response.status, body: errorText.slice(0, 500) });
         
         const spanName = `repo_chat_${repoName}`;
         await capturePostHogEvent('$ai_generation', {
@@ -403,8 +410,8 @@ When responding:
 
   } catch (error) {
     console.error('Error in chat-with-repo:', error);
-    const { capturePostHogException } = await import("../_shared/posthog.ts");
     await capturePostHogException(error, { fn: 'chat-with-repo' });
+    await capturePostHogLog("error", error instanceof Error ? error.message : String(error), { fn: "chat-with-repo" });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

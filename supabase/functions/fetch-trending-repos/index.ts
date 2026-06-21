@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
-import { capturePostHogException } from "../_shared/posthog.ts";
+import { capturePostHogException, capturePostHogLog, createEdgeLogger } from "../_shared/posthog.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -12,6 +12,8 @@ serve(async (req) => {
 
   try {
     const { language, since } = await req.json();
+    const log = createEdgeLogger("fetch-trending-repos");
+    log.info("Request received", { language: language || "all", since: since || "weekly" });
     
     // Build GitHub trending URL
     const period = since === 'daily' ? 'daily' : since === 'monthly' ? 'monthly' : 'weekly';
@@ -84,6 +86,7 @@ serve(async (req) => {
     }
 
     console.log(`Successfully scraped ${repos.length} trending repos`);
+    log.info("Scrape completed", { count: repos.length });
 
     return new Response(
       JSON.stringify({ repos: repos.slice(0, 10) }),
@@ -93,6 +96,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error fetching trending repos:', error);
     await capturePostHogException(error, { fn: 'fetch-trending-repos' });
+    await capturePostHogLog("error", error instanceof Error ? error.message : String(error), { fn: "fetch-trending-repos" });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

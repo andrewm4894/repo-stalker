@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { capturePostHogEvent } from "../_shared/posthog.ts";
+import { capturePostHogEvent, capturePostHogException, capturePostHogLog, createEdgeLogger } from "../_shared/posthog.ts";
 import { validateModel, validateItems, badRequest } from "../_shared/validation.ts";
 import { checkRateLimit, getClientIp, rateLimited } from "../_shared/rateLimit.ts";
 
@@ -13,10 +13,16 @@ serve(async (req) => {
   }
 
   try {
-    const rl = await checkRateLimit(getClientIp(req), "summarize-items");
-    if (!rl.allowed) return rateLimited(rl, corsHeaders);
+    const ip = getClientIp(req);
+    const rl = await checkRateLimit(ip, "summarize-items");
+    if (!rl.allowed) {
+      await capturePostHogLog("warn", "Rate limit exceeded", { fn: "summarize-items", attributes: { ip, retry_after: rl.retryAfter } });
+      return rateLimited(rl, corsHeaders);
+    }
 
     const { items, type, distinctId, sessionId, model } = await req.json();
+    const log = createEdgeLogger("summarize-items", { distinctId, sessionId });
+    log.info("Request received", { item_type: type, item_count: items?.length ?? 0, model: model || "default" });
 
     if (!items || (Array.isArray(items) && items.length === 0)) {
       return new Response(
@@ -83,6 +89,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI API error:', response.status, errorText);
+      log.error("Lovable AI request failed", { status: response.status, body: errorText.slice(0, 500) });
       
       if (response.status === 429) {
         return new Response(
@@ -138,8 +145,8 @@ Keep the summary brief (3-5 sentences) and actionable.`;
 
   } catch (error) {
     console.error('Error in summarize-items function:', error);
-    const { capturePostHogException } = await import("../_shared/posthog.ts");
     await capturePostHogException(error, { fn: 'summarize-items' });
+    await capturePostHogLog("error", error instanceof Error ? error.message : String(error), { fn: "summarize-items" });
     
     // Track failed AI generation in PostHog
     const { distinctId, type, items: errorItems, sessionId, model: errorModel } = await req.json().catch(() => ({}));

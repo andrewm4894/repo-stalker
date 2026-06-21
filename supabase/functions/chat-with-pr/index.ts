@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { capturePostHogEvent, capturePostHogException } from "../_shared/posthog.ts";
+import { capturePostHogEvent, capturePostHogException, createEdgeLogger, capturePostHogLog } from "../_shared/posthog.ts";
 import {
   validateModel,
   validateMessage,
@@ -18,10 +18,17 @@ serve(async (req) => {
   }
 
   try {
-    const rl = await checkRateLimit(getClientIp(req), "chat-with-pr");
-    if (!rl.allowed) return rateLimited(rl, corsHeaders);
+    const ip = getClientIp(req);
+    const rl = await checkRateLimit(ip, "chat-with-pr");
+    if (!rl.allowed) {
+      const log = createEdgeLogger("chat-with-pr");
+      log.warn("Rate limit exceeded", { ip, retry_after: rl.retryAfter });
+      return rateLimited(rl, corsHeaders);
+    }
 
     const { message, context, title, prUrl, prNumber, repoFullName, history, distinctId, chatId, sessionId, model } = await req.json();
+    const log = createEdgeLogger("chat-with-pr", { distinctId, sessionId });
+    log.info("Request received", { repo: repoFullName, pr_number: prNumber, model: model || "default" });
 
     const safeHistory = Array.isArray(history) ? history : [];
     const validationError =
@@ -161,6 +168,7 @@ Keep responses focused and practical. Use tools proactively when they would help
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Lovable AI error:', response.status, errorText);
+        log.error("Lovable AI request failed", { status: response.status, body: errorText.slice(0, 500) });
         
         const spanName = `pr_chat_${repoFullName.replace('/', '_')}_${prNumber}`;
         await capturePostHogEvent('$ai_generation', {
@@ -296,6 +304,7 @@ Keep responses focused and practical. Use tools proactively when they would help
       }
     }
 
+    log.info("Request completed", { repo: repoFullName, pr_number: prNumber });
     return new Response(
       JSON.stringify({ response: finalResponse }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -303,6 +312,7 @@ Keep responses focused and practical. Use tools proactively when they would help
   } catch (error) {
     console.error('Error in chat-with-pr function:', error);
     await capturePostHogException(error, { fn: 'chat-with-pr' });
+    await capturePostHogLog("error", error instanceof Error ? error.message : String(error), { fn: "chat-with-pr" });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
