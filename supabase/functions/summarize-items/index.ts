@@ -162,11 +162,11 @@ Keep the summary brief (3-5 sentences) and actionable.`;
       }, distinctId, spanName, sessionId);
     }
 
+    await tracer.end({ status: "ok" });
     return new Response(
       JSON.stringify({ summary }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-    // (tracer.end called below via finally-style pattern; see catch block)
 
   } catch (error) {
     console.error('Error in summarize-items function:', error);
