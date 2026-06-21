@@ -28,7 +28,7 @@ export function getCorsHeaders(req: Request): Record<string, string> {
   if (isOriginAllowed(origin)) {
     return {
       'Access-Control-Allow-Origin': origin || '*',
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, traceparent, tracestate',
       'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
       'Access-Control-Max-Age': '86400', // 24 hours
     };
@@ -37,12 +37,12 @@ export function getCorsHeaders(req: Request): Record<string, string> {
   // Default headers for non-allowed origins (will fail but with proper headers)
   return {
     'Access-Control-Allow-Origin': 'null',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, traceparent, tracestate',
   };
 }
 
 // Legacy export for backwards compatibility (uses wildcard)
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, traceparent, tracestate',
 };
