@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { capturePostHogEvent } from "../_shared/posthog.ts";
+import { capturePostHogException } from "../_shared/posthog.ts";
 import {
   validateModel,
   validateMessage,
@@ -302,6 +303,7 @@ Keep responses focused and practical. Use tools proactively when they would help
     );
   } catch (error) {
     console.error('Error in chat-with-pr function:', error);
+    await capturePostHogException(error, { fn: 'chat-with-pr' });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 

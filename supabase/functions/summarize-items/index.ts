@@ -138,6 +138,8 @@ Keep the summary brief (3-5 sentences) and actionable.`;
 
   } catch (error) {
     console.error('Error in summarize-items function:', error);
+    const { capturePostHogException } = await import("../_shared/posthog.ts");
+    await capturePostHogException(error, { fn: 'summarize-items' });
     
     // Track failed AI generation in PostHog
     const { distinctId, type, items: errorItems, sessionId, model: errorModel } = await req.json().catch(() => ({}));

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
+import { capturePostHogException } from "../_shared/posthog.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -91,6 +92,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error fetching trending repos:', error);
+    await capturePostHogException(error, { fn: 'fetch-trending-repos' });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
