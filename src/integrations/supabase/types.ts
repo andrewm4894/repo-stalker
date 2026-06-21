@@ -14,13 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      rate_limit_hits: {
+        Row: {
+          created_at: string
+          fn: string
+          id: number
+          ip: string
+        }
+        Insert: {
+          created_at?: string
+          fn: string
+          id?: number
+          ip: string
+        }
+        Update: {
+          created_at?: string
+          fn?: string
+          id?: number
+          ip?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_rate_limit: {
+        Args: {
+          p_fn: string
+          p_hour_limit: number
+          p_ip: string
+          p_minute_limit: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

@@ -8,6 +8,7 @@ import {
   validateItems,
   badRequest,
 } from "../_shared/validation.ts";
+import { checkRateLimit, getClientIp, rateLimited } from "../_shared/rateLimit.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -17,6 +18,9 @@ serve(async (req) => {
   }
 
   try {
+    const rl = await checkRateLimit(getClientIp(req), "chat-with-repo");
+    if (!rl.allowed) return rateLimited(rl, corsHeaders);
+
     const { message, items, type, summary, history, distinctId, chatId, sessionId, model } = await req.json();
 
     const safeHistory = Array.isArray(history) ? history : [];
