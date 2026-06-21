@@ -1,6 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { capturePostHogEvent } from "../_shared/posthog.ts";
+import {
+  validateModel,
+  validateMessage,
+  validateHistory,
+  validateItems,
+  badRequest,
+} from "../_shared/validation.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -11,7 +18,15 @@ serve(async (req) => {
 
   try {
     const { message, items, type, summary, history, distinctId, chatId, sessionId, model } = await req.json();
-    
+
+    const safeHistory = Array.isArray(history) ? history : [];
+    const validationError =
+      validateMessage(message) ||
+      validateItems(items) ||
+      validateHistory(safeHistory) ||
+      validateModel(model);
+    if (validationError) return badRequest(validationError, corsHeaders);
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
@@ -169,7 +184,7 @@ When responding:
     // Build messages array
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history,
+      ...safeHistory,
       { role: "user", content: message }
     ];
 
@@ -241,7 +256,7 @@ When responding:
           $ai_tools: tools,
           item_type: type,
           item_count: items.length,
-          conversation_length: history.length + 1,
+          conversation_length: safeHistory.length + 1,
           tool_calls_made: iteration - 1,
         }, distinctId || 'anonymous', spanName, sessionId);
 

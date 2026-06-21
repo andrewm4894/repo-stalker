@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { capturePostHogEvent } from "../_shared/posthog.ts";
+import { validateModel, validateItems, badRequest } from "../_shared/validation.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -12,13 +13,16 @@ serve(async (req) => {
 
   try {
     const { items, type, distinctId, sessionId, model } = await req.json();
-    
-    if (!items || items.length === 0) {
+
+    if (!items || (Array.isArray(items) && items.length === 0)) {
       return new Response(
         JSON.stringify({ error: 'No items to summarize' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const validationError = validateItems(items) || validateModel(model);
+    if (validationError) return badRequest(validationError, corsHeaders);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
