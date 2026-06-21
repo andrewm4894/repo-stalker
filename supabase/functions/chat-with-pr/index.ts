@@ -219,9 +219,9 @@ Keep responses focused and practical. Use tools proactively when they would help
 
         break;
       }
-    }
-    log.info("Request completed", { repo: repoFullName, pr_number: prNumber });
 
+      // Add assistant message with tool calls
+      currentMessages.push(aiMessage);
 
       // Process each tool call
       for (const toolCall of aiMessage.tool_calls) {
@@ -304,6 +304,7 @@ Keep responses focused and practical. Use tools proactively when they would help
       }
     }
 
+    log.info("Request completed", { repo: repoFullName, pr_number: prNumber });
     return new Response(
       JSON.stringify({ response: finalResponse }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -311,6 +312,7 @@ Keep responses focused and practical. Use tools proactively when they would help
   } catch (error) {
     console.error('Error in chat-with-pr function:', error);
     await capturePostHogException(error, { fn: 'chat-with-pr' });
+    await capturePostHogLog("error", error instanceof Error ? error.message : String(error), { fn: "chat-with-pr" });
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
