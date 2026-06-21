@@ -3,8 +3,10 @@ import App from "./App.tsx";
 import "./index.css";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { initPostHogLogs } from "./lib/posthogLogs";
+import { initPostHogTracing } from "./lib/posthogTracing";
 
 initPostHogLogs();
+initPostHogTracing();
 
 // Report uncaught errors and unhandled promise rejections to PostHog.
 // PostHog's `capture_exceptions: true` covers most cases, but we add an
