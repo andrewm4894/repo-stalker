@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { capturePostHogEvent, capturePostHogException, capturePostHogLog, createEdgeLogger } from "../_shared/posthog.ts";
+import { capturePostHogEvent, capturePostHogException, capturePostHogLog, createEdgeLogger, EdgeTracer, parseTraceparent } from "../_shared/posthog.ts";
 import {
   validateModel,
   validateMessage,
@@ -28,6 +28,16 @@ serve(async (req) => {
     const { message, items, type, summary, history, distinctId, chatId, sessionId, model } = await req.json();
     const log = createEdgeLogger("chat-with-repo", { distinctId, sessionId });
     log.info("Request received", { item_type: type, item_count: items?.length ?? 0, model: model || "default" });
+    const parent = parseTraceparent(req.headers.get("traceparent"));
+    const tracer = new EdgeTracer({
+      fn: "chat-with-repo",
+      rootName: "POST /chat-with-repo",
+      parentTraceId: parent?.traceId,
+      parentSpanId: parent?.spanId,
+      distinctId,
+      sessionId,
+      rootAttributes: { item_type: type, item_count: items?.length ?? 0, model: model || "default" },
+    });
 
     const safeHistory = Array.isArray(history) ? history : [];
     const validationError =
@@ -206,7 +216,12 @@ When responding:
 
     while (iteration < maxIterations) {
       iteration++;
-      
+      const aiSpan = tracer.startSpan(`lovable-ai chat.completions iter=${iteration}`, {
+        "http.method": "POST",
+        "http.url": "https://ai.gateway.lovable.dev/v1/chat/completions",
+        "ai.model": model || "default",
+        "ai.iteration": iteration,
+      }, 3);
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -224,6 +239,7 @@ When responding:
         const errorText = await response.text();
         console.error('Lovable AI error:', response.status, errorText);
         log.error("Lovable AI request failed", { status: response.status, body: errorText.slice(0, 500) });
+        aiSpan.end({ status: "error", error: errorText, attributes: { "http.status_code": response.status } });
         
         const spanName = `repo_chat_${repoName}`;
         await capturePostHogEvent('$ai_generation', {
@@ -246,6 +262,15 @@ When responding:
 
       const data = await response.json();
       const assistantMessage = data.choices[0].message;
+      aiSpan.end({
+        status: "ok",
+        attributes: {
+          "http.status_code": response.status,
+          "ai.prompt_tokens": data.usage?.prompt_tokens,
+          "ai.completion_tokens": data.usage?.completion_tokens,
+          "ai.tool_calls": assistantMessage.tool_calls?.length || 0,
+        },
+      });
 
       // If no tool calls, return the response
       if (!assistantMessage.tool_calls) {
@@ -271,6 +296,7 @@ When responding:
           tool_calls_made: iteration - 1,
         }, distinctId || 'anonymous', spanName, sessionId);
 
+        await tracer.end({ status: "ok" });
         return new Response(
           JSON.stringify({ response: assistantMessage.content }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
