@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { capturePostHogEvent, capturePostHogException, createEdgeLogger, capturePostHogLog } from "../_shared/posthog.ts";
+import { capturePostHogEvent, capturePostHogException, createEdgeLogger, capturePostHogLog, EdgeTracer, parseTraceparent } from "../_shared/posthog.ts";
 import {
   validateModel,
   validateMessage,
@@ -29,6 +29,16 @@ serve(async (req) => {
     const { message, context, title, prUrl, prNumber, repoFullName, history, distinctId, chatId, sessionId, model } = await req.json();
     const log = createEdgeLogger("chat-with-pr", { distinctId, sessionId });
     log.info("Request received", { repo: repoFullName, pr_number: prNumber, model: model || "default" });
+    const parent = parseTraceparent(req.headers.get("traceparent"));
+    const tracer = new EdgeTracer({
+      fn: "chat-with-pr",
+      rootName: "POST /chat-with-pr",
+      parentTraceId: parent?.traceId,
+      parentSpanId: parent?.spanId,
+      distinctId,
+      sessionId,
+      rootAttributes: { repo: repoFullName, pr_number: prNumber, model: model || "default" },
+    });
 
     const safeHistory = Array.isArray(history) ? history : [];
     const validationError =
@@ -151,6 +161,12 @@ Keep responses focused and practical. Use tools proactively when they would help
     let maxIterations = 5;
     
     for (let iteration = 0; iteration < maxIterations; iteration++) {
+      const aiSpan = tracer.startSpan(`lovable-ai chat.completions iter=${iteration}`, {
+        "http.method": "POST",
+        "http.url": "https://ai.gateway.lovable.dev/v1/chat/completions",
+        "ai.model": model || "default",
+        "ai.iteration": iteration,
+      }, 3);
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -169,6 +185,7 @@ Keep responses focused and practical. Use tools proactively when they would help
         const errorText = await response.text();
         console.error('Lovable AI error:', response.status, errorText);
         log.error("Lovable AI request failed", { status: response.status, body: errorText.slice(0, 500) });
+        aiSpan.end({ status: "error", error: errorText, attributes: { "http.status_code": response.status } });
         
         const spanName = `pr_chat_${repoFullName.replace('/', '_')}_${prNumber}`;
         await capturePostHogEvent('$ai_generation', {
@@ -191,6 +208,15 @@ Keep responses focused and practical. Use tools proactively when they would help
       const data = await response.json();
       const choice = data.choices[0];
       const aiMessage = choice.message;
+      aiSpan.end({
+        status: "ok",
+        attributes: {
+          "http.status_code": response.status,
+          "ai.prompt_tokens": data.usage?.prompt_tokens,
+          "ai.completion_tokens": data.usage?.completion_tokens,
+          "ai.tool_calls": aiMessage.tool_calls?.length || 0,
+        },
+      });
 
       // If no tool calls, we're done
       if (!aiMessage.tool_calls || aiMessage.tool_calls.length === 0) {
@@ -305,6 +331,7 @@ Keep responses focused and practical. Use tools proactively when they would help
     }
 
     log.info("Request completed", { repo: repoFullName, pr_number: prNumber });
+    await tracer.end({ status: "ok" });
     return new Response(
       JSON.stringify({ response: finalResponse }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

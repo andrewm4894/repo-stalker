@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
-import { capturePostHogException, capturePostHogLog, createEdgeLogger } from "../_shared/posthog.ts";
+import { capturePostHogException, capturePostHogLog, createEdgeLogger, EdgeTracer, parseTraceparent } from "../_shared/posthog.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -14,6 +14,14 @@ serve(async (req) => {
     const { language, since } = await req.json();
     const log = createEdgeLogger("fetch-trending-repos");
     log.info("Request received", { language: language || "all", since: since || "weekly" });
+    const parent = parseTraceparent(req.headers.get("traceparent"));
+    const tracer = new EdgeTracer({
+      fn: "fetch-trending-repos",
+      rootName: "POST /fetch-trending-repos",
+      parentTraceId: parent?.traceId,
+      parentSpanId: parent?.spanId,
+      rootAttributes: { language: language || "all", since: since || "weekly" },
+    });
     
     // Build GitHub trending URL
     const period = since === 'daily' ? 'daily' : since === 'monthly' ? 'monthly' : 'weekly';
@@ -22,7 +30,10 @@ serve(async (req) => {
     
     console.log(`Scraping GitHub trending page: ${url}`);
     
-    // Fetch the trending page
+    const fetchSpan = tracer.startSpan("github trending scrape", {
+      "http.method": "GET",
+      "http.url": url,
+    }, 3);
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -30,10 +41,12 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      fetchSpan.end({ status: "error", attributes: { "http.status_code": response.status } });
       throw new Error(`GitHub returned ${response.status}`);
     }
 
     const html = await response.text();
+    fetchSpan.end({ status: "ok", attributes: { "http.status_code": response.status, "response.bytes": html.length } });
     const doc = new DOMParser().parseFromString(html, 'text/html');
     
     if (!doc) {
@@ -87,6 +100,7 @@ serve(async (req) => {
 
     console.log(`Successfully scraped ${repos.length} trending repos`);
     log.info("Scrape completed", { count: repos.length });
+    await tracer.end({ status: "ok" });
 
     return new Response(
       JSON.stringify({ repos: repos.slice(0, 10) }),
