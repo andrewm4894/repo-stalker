@@ -1,6 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { capturePostHogEvent } from "../_shared/posthog.ts";
+import {
+  validateModel,
+  validateMessage,
+  validateHistory,
+  validateContext,
+  badRequest,
+} from "../_shared/validation.ts";
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -11,6 +18,15 @@ serve(async (req) => {
 
   try {
     const { message, context, title, prUrl, prNumber, repoFullName, history, distinctId, chatId, sessionId, model } = await req.json();
+
+    const safeHistory = Array.isArray(history) ? history : [];
+    const validationError =
+      validateMessage(message) ||
+      validateHistory(safeHistory) ||
+      validateContext(context) ||
+      validateModel(model);
+    if (validationError) return badRequest(validationError, corsHeaders);
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
@@ -106,7 +122,7 @@ Your job is to:
 
 Keep responses focused and practical. Use tools proactively when they would help answer the user's question.`
       },
-      ...history.map((msg: { role: string; content: string }) => ({
+      ...safeHistory.map((msg: { role: string; content: string }) => ({
         role: msg.role,
         content: msg.content
       })),
@@ -185,7 +201,7 @@ Keep responses focused and practical. Use tools proactively when they would help
           $ai_latency: (endTime - startTime) / 1000,
           $ai_tools: tools,
           pr_title: title,
-          conversation_length: history.length + 1,
+          conversation_length: safeHistory.length + 1,
           tool_calls_made: iteration,
         }, distinctId || 'anonymous', spanName, sessionId);
 
