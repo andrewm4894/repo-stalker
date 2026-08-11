@@ -1,5 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SUPPORTED_MODELS } from "@/lib/modelUtils";
+import { useFeatureFlagEnabled } from "@/lib/featureFlags";
 import { Sparkles } from "lucide-react";
 
 interface ModelSelectorProps {
@@ -9,6 +10,12 @@ interface ModelSelectorProps {
 }
 
 export const ModelSelector = ({ value, onChange, disabled }: ModelSelectorProps) => {
+  const hidePreviewModels = useFeatureFlagEnabled("hide_preview_models");
+
+  const models = hidePreviewModels
+    ? SUPPORTED_MODELS.filter((m) => !m.label.toLowerCase().includes("preview"))
+    : SUPPORTED_MODELS;
+
   return (
     <div className="flex items-center gap-2 w-full md:w-auto">
       <Sparkles className="w-4 h-4 text-muted-foreground" />
@@ -17,7 +24,7 @@ export const ModelSelector = ({ value, onChange, disabled }: ModelSelectorProps)
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {SUPPORTED_MODELS.map((model) => (
+          {models.map((model) => (
             <SelectItem key={model.value} value={model.value} className="text-xs">
               {model.label}
             </SelectItem>
