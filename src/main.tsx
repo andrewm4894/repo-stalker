@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { SurveyProvider } from "./components/SurveyProvider";
 import { initPostHogLogs } from "./lib/posthogLogs";
 import { initPostHogTracing } from "./lib/posthogTracing";
 
@@ -28,6 +29,8 @@ if (typeof window !== "undefined") {
 
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
-    <App />
+    <SurveyProvider>
+      <App />
+    </SurveyProvider>
   </ErrorBoundary>
 );
