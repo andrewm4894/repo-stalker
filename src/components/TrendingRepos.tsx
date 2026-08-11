@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Star, ExternalLink } from "lucide-react";
+import { TrendingUp, Star, ExternalLink, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,37 +20,43 @@ interface TrendingReposProps {
   onSelectRepo: (repo: string) => void;
 }
 
+const fetchTrendingRepos = async (): Promise<TrendingRepo[]> => {
+  const { data, error } = await supabase.functions.invoke('fetch-trending-repos', {
+    body: { language: 'all', since: 'weekly' }
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  return data.repos || [];
+};
+
 export const TrendingRepos = ({ onSelectRepo }: TrendingReposProps) => {
-  const [repos, setRepos] = useState<TrendingRepo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: repos = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ["trending-repos"],
+    queryFn: fetchTrendingRepos,
+    retry: 2,
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
-    fetchTrendingRepos();
-  }, []);
-
-  const fetchTrendingRepos = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('fetch-trending-repos', {
-        body: { language: 'all', since: 'weekly' }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      setRepos(data.repos || []);
-    } catch (error) {
-      console.error('Error fetching trending repos:', error);
+    if (isError) {
+      console.error("Error fetching trending repos:", error);
       toast.error("Failed to load trending repositories");
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [isError, error]);
 
   if (isLoading) {
     return (
@@ -65,6 +72,29 @@ export const TrendingRepos = ({ onSelectRepo }: TrendingReposProps) => {
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-20 w-full" />
           ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Trending Repositories
+          </CardTitle>
+          <CardDescription>Popular repos from the past week</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            We could not load trending repositories right now.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            Try again
+          </Button>
         </CardContent>
       </Card>
     );
