@@ -6,7 +6,7 @@
 // used by `posthog.init` authenticates the OTLP endpoint.
 
 const POSTHOG_LOGS_ENDPOINT = "https://us.i.posthog.com/i/v1/logs";
-const POSTHOG_TOKEN = "phc_kJw12LPrvTZ8INN6KYHtaVzL0jrh0qD7AXi2qSmBC2p";
+const POSTHOG_TOKEN = "phc_ABOAagCSNfMOUWin6A6Tda0WuhzWLFSXjSgSiq9KKBs";
 
 type Level = "info" | "warn" | "error";
 const SEVERITY: Record<Level, { num: number; text: string }> = {

@@ -238,7 +238,7 @@ async function flushSpans(
     console.error("PostHog trace flush failed:", e);
   }
 }
-export const POSTHOG_API_KEY = 'phc_kJw12LPrvTZ8INN6KYHtaVzL0jrh0qD7AXi2qSmBC2p';
+export const POSTHOG_API_KEY = 'phc_ABOAagCSNfMOUWin6A6Tda0WuhzWLFSXjSgSiq9KKBs';
 export const POSTHOG_HOST = 'https://us.i.posthog.com';
 export const POSTHOG_LOGS_ENDPOINT = `${POSTHOG_HOST}/i/v1/logs`;
 

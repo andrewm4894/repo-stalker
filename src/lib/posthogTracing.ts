@@ -7,7 +7,7 @@
 // span (and any AI/GitHub child spans) under the same trace.
 
 const POSTHOG_TRACES_ENDPOINT = "https://us.i.posthog.com/i/v1/traces";
-const POSTHOG_TOKEN = "phc_kJw12LPrvTZ8INN6KYHtaVzL0jrh0qD7AXi2qSmBC2p";
+const POSTHOG_TOKEN = "phc_ABOAagCSNfMOUWin6A6Tda0WuhzWLFSXjSgSiq9KKBs";
 
 function randomHex(bytes: number): string {
   const buf = new Uint8Array(bytes);
