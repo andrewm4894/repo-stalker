@@ -12,6 +12,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Parse the body once so the catch block can reuse it. Reading the request a
+  // second time always rejects because the stream is already consumed.
+  let body: any = {};
+
   try {
     const ip = getClientIp(req);
     const rl = await checkRateLimit(ip, "summarize-items");
@@ -20,7 +24,8 @@ serve(async (req) => {
       return rateLimited(rl, corsHeaders);
     }
 
-    const { items, type, distinctId, sessionId, model } = await req.json();
+    body = await req.json();
+    const { items, type, distinctId, sessionId, model } = body;
     const log = createEdgeLogger("summarize-items", { distinctId, sessionId });
     log.info("Request received", { item_type: type, item_count: items?.length ?? 0, model: model || "default" });
     const parent = parseTraceparent(req.headers.get("traceparent"));
@@ -174,7 +179,7 @@ Keep the summary brief (3-5 sentences) and actionable.`;
     await capturePostHogLog("error", error instanceof Error ? error.message : String(error), { fn: "summarize-items" });
     
     // Track failed AI generation in PostHog
-    const { distinctId, type, items: errorItems, sessionId, model: errorModel } = await req.json().catch(() => ({}));
+    const { distinctId, type, items: errorItems, sessionId, model: errorModel } = body;
     if (distinctId) {
       // Try to extract repo name even in error case
       let repoName = 'unknown';

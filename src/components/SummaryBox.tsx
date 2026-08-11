@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, Loader2, MessageSquare } from "lucide-react";
+import { ChevronDown, Loader2, MessageSquare, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
@@ -31,6 +31,7 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [summary, setSummary] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [lastType, setLastType] = useState<string>(type);
   const [chatOpen, setChatOpen] = useState(false);
   const { toast } = useToast();
@@ -38,6 +39,7 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
   // Reset summary when type changes
   if (type !== lastType) {
     setSummary("");
+    setHasError(false);
     setLastType(type);
     setIsOpen(false);
   }
@@ -54,6 +56,7 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
 
   const generateSummary = async () => {
     setIsLoading(true);
+    setHasError(false);
     try {
       // Get PostHog distinct ID
       const distinctId = (window as any).posthog?.get_distinct_id?.() || 'anonymous';
@@ -74,8 +77,15 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
       setSummary(data.summary);
     } catch (error) {
       console.error('Error generating summary:', error);
+      setHasError(true);
+      // Report the failure to error tracking so we can measure how often it happens.
+      (window as any).posthog?.captureException?.(error, {
+        source: "SummaryBox.generateSummary",
+        item_type: type,
+        model,
+      });
       const errorMessage = error instanceof Error ? error.message : "Please try again later";
-      
+
       // Check if it's a rate limit error
       if (errorMessage.includes("rate limit") || errorMessage.includes("Rate limit")) {
         toast({
@@ -108,6 +118,7 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
+              disabled={isLoading}
               className="w-full justify-between p-3 md:p-4 h-auto hover:bg-accent/50"
             >
               <div className="flex items-center gap-2">
@@ -145,6 +156,21 @@ export const SummaryBox = ({ items, type, model }: SummaryBoxProps) => {
                     Chat about these {itemType}
                   </Button>
                 </>
+              ) : hasError ? (
+                <div className="flex flex-col items-center gap-2 py-3 md:py-4">
+                  <p className="text-xs md:text-sm text-destructive text-center">
+                    Failed to generate summary.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={generateSummary}
+                    className="gap-2 text-xs md:text-sm h-8 md:h-9"
+                  >
+                    <RefreshCw className="h-3 w-3 md:h-4 md:w-4" />
+                    Retry
+                  </Button>
+                </div>
               ) : (
                 <div className="text-xs md:text-sm text-muted-foreground text-center py-3 md:py-4">
                   Expand to generate AI summary
