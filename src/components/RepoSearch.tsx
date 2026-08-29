@@ -6,6 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export type TimeFilter = "7d" | "14d" | "30d" | "90d" | "all";
 
+// Accept the GitHub "owner/repo" shape: two non-empty segments and a single slash.
+const REPO_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\/[a-zA-Z0-9._-]+$/;
+
 interface RepoSearchProps {
   onSearch: (repo: string, filter: TimeFilter, searchTerm: string) => void;
   isLoading: boolean;
@@ -14,6 +17,7 @@ interface RepoSearchProps {
 
 export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps) => {
   const [repo, setRepo] = useState("");
+  const [repoError, setRepoError] = useState("");
   const [filter, setFilter] = useState<TimeFilter>("14d");
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -36,9 +40,13 @@ export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (repo.trim()) {
-      onSearch(repo.trim(), filter, searchTerm.trim());
+    const trimmedRepo = repo.trim();
+    if (!REPO_PATTERN.test(trimmedRepo)) {
+      setRepoError("Enter a repository as owner/repo, for example facebook/react.");
+      return;
     }
+    setRepoError("");
+    onSearch(trimmedRepo, filter, searchTerm.trim());
   };
 
   return (
@@ -57,19 +65,30 @@ export const RepoSearch = ({ onSearch, isLoading, currentRepo }: RepoSearchProps
                 type="text"
                 placeholder="owner/repo (e.g., facebook/react)"
                 value={repo}
-                onChange={(e) => setRepo(e.target.value)}
+                onChange={(e) => {
+                  setRepo(e.target.value);
+                  if (repoError) setRepoError("");
+                }}
+                aria-invalid={!!repoError}
+                aria-describedby={repoError ? "repo-error" : undefined}
                 className="pl-10 bg-secondary border-border terminal-text text-sm"
                 disabled={isLoading}
               />
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading || !repo.trim()}
               className="gradient-primary hover:opacity-90 transition-opacity w-full sm:w-auto"
             >
               {isLoading ? "Loading..." : "Search"}
             </Button>
           </div>
+
+          {repoError && (
+            <p id="repo-error" role="alert" className="text-sm text-destructive">
+              {repoError}
+            </p>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div className="flex items-center gap-2">
