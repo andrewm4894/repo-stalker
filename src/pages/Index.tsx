@@ -11,6 +11,7 @@ import { SaveRepoButton } from "@/components/SaveRepoButton";
 import { SummaryBox } from "@/components/SummaryBox";
 import { TrendingRepos } from "@/components/TrendingRepos";
 import { ModelSelector } from "@/components/ModelSelector";
+import { ThemePicker } from "@/components/ThemePicker";
 import { DEFAULT_MODEL } from "@/lib/modelUtils";
 
 interface PR {
@@ -154,11 +155,14 @@ const Index = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
           <Logo />
-          <ModelSelector 
-            value={selectedModel} 
-            onChange={setSelectedModel} 
-            disabled={isLoading}
-          />
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <ModelSelector
+              value={selectedModel}
+              onChange={setSelectedModel}
+              disabled={isLoading}
+            />
+            <ThemePicker />
+          </div>
         </div>
 
         {/* Search */}
