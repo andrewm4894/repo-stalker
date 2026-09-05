@@ -30,6 +30,19 @@
           disable_surveys: false,
       })
     </script>
+
+    <!-- Apply the saved theme before first paint to avoid a flash of the default theme.
+         The key must match STORAGE_KEY in src/lib/themes.ts. -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("repo-stalker-theme");
+          if (theme) document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          /* localStorage may be unavailable; fall back to the default theme. */
+        }
+      })();
+    </script>
   </head>
 
   <body>
